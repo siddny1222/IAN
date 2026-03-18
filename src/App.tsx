@@ -226,9 +226,11 @@ function AppFrame() {
       </main>
 
       <div className="dreamcore-veil" aria-hidden="true">
-        <div className="dreamcore-veil__mist" />
+        <div className="dreamcore-veil__fog-far" />
+        <div className="dreamcore-veil__fog-near" />
+        <div className="dreamcore-veil__chroma" />
         <div className="dreamcore-veil__bloom" />
-        <div className="dreamcore-veil__glass" />
+        <div className="dreamcore-veil__surface" />
       </div>
     </div>
   )
