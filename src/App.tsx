@@ -42,10 +42,7 @@ function AppFrame() {
   const location = useLocation()
   const locationPathname = location.pathname
   const locationSearch = location.search
-  const locationHash = location.hash
   const locationState = location.state
-  const locationKey = location.key
-  const locationMask = location.unstable_mask
   const [displayLocation, setDisplayLocation] = useState(location)
   const [routePhase, setRoutePhase] = useState<'steady' | 'leaving' | 'entering'>('steady')
   const displayLocationRef = useRef(location)
@@ -104,12 +101,10 @@ function AppFrame() {
     const nextTo = getRouteTone(locationPathname)
     const nextProfile = getTransitionProfile(nextFrom, nextTo)
     const nextLocation = {
+      ...location,
       pathname: locationPathname,
       search: locationSearch,
-      hash: locationHash,
       state: locationState,
-      key: locationKey,
-      unstable_mask: locationMask,
     }
 
     phaseFrameRef.current = window.requestAnimationFrame(() => {
@@ -140,7 +135,7 @@ function AppFrame() {
         window.clearTimeout(enterTimerRef.current)
       }
     }
-  }, [locationHash, locationKey, locationMask, locationPathname, locationSearch, locationState])
+  }, [location, locationPathname, locationSearch, locationState])
 
   const shellStyle = {
     '--tone-a': palette[0],

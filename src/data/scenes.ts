@@ -13,6 +13,16 @@ export type DimensionTone =
   | 'soviet'
   | 'error'
 
+export type DimensionSlug =
+  | 'dreamfield'
+  | 'browser-shrine'
+  | 'silent-bedroom'
+  | 'poolcore'
+  | 'dead-mall'
+  | 'backrooms'
+  | 'post-soviet-signal'
+  | 'error-shrine'
+
 export type Dimension = {
   slug: string
   path: string
@@ -35,7 +45,7 @@ export type Dimension = {
   internetArtifacts: LocalizedList
   physicalArtifacts: LocalizedList
   overlayWords: LocalizedList
-  crossLinks: string[]
+  crossLinks: DimensionSlug[]
   media: {
     still: string
     texture: string
@@ -1070,21 +1080,6 @@ export function fragmentText(text: string) {
   return [cleaned]
 }
 
-export function polyglotList(list: LocalizedList) {
-  const items: Array<{ language: Language; value: string }> = []
-  const maxLength = Math.max(...languages.map((language) => list[language].length))
-
-  for (let index = 0; index < maxLength; index += 1) {
-    for (const language of languages) {
-      const value = list[language][index]
-      if (value) {
-        items.push({ language, value })
-      }
-    }
-  }
-
-  return items
-}
 
 export function pickLocalized(text: LocalizedText, language: Language) {
   return text[language] ?? text.en

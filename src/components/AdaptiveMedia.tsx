@@ -2,7 +2,6 @@ import { usePerformanceProfile } from '../context/usePerformanceProfile'
 import {
   getMediaFallbackPath,
   isVideoPath,
-  normalizeMediaPath,
   shouldSkipHighCostMedia,
   withBase,
 } from '../lib/performance'
@@ -41,15 +40,14 @@ export default function AdaptiveMedia({
   staticFallback,
 }: AdaptiveMediaProps) {
   const profile = usePerformanceProfile()
-  const normalizedPath = normalizeMediaPath(path)
 
-  if (!normalizedPath) {
+  if (!path) {
     return null
   }
 
-  const fallbackPath = staticFallback ?? poster ?? getMediaFallbackPath(normalizedPath)
+  const fallbackPath = staticFallback ?? poster ?? getMediaFallbackPath(path)
   const shouldRenderStatic = forceStatic
-    || (profile.preferStaticMedia && shouldSkipHighCostMedia(normalizedPath, profile))
+    || (profile.preferStaticMedia && shouldSkipHighCostMedia(path, profile))
 
   if (shouldRenderStatic && fallbackPath) {
     return (
@@ -64,7 +62,7 @@ export default function AdaptiveMedia({
     )
   }
 
-  if (isVideoPath(normalizedPath)) {
+  if (isVideoPath(path)) {
     return (
       <video
         aria-hidden={ariaHidden}
@@ -76,7 +74,7 @@ export default function AdaptiveMedia({
         poster={fallbackPath ? withBase(fallbackPath) : undefined}
         preload={preload ?? (loading === 'lazy' || profile.preferStaticMedia ? 'none' : 'metadata')}
       >
-        <source src={withBase(normalizedPath)} />
+        <source src={withBase(path)} />
       </video>
     )
   }
@@ -88,7 +86,7 @@ export default function AdaptiveMedia({
       className={className}
       decoding={decoding}
       loading={loading}
-      src={withBase(normalizedPath)}
+      src={withBase(path)}
     />
   )
 }

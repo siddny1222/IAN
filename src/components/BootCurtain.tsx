@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import AdaptiveMedia from './AdaptiveMedia'
 import { usePerformanceProfile } from '../context/usePerformanceProfile'
@@ -24,6 +24,7 @@ export default function BootCurtain({
   phase,
 }: BootCurtainProps) {
   const performanceProfile = usePerformanceProfile()
+  const dialogRef = useRef<HTMLDivElement>(null)
   const pointerStartYRef = useRef<number | null>(null)
   const [loadedCount, setLoadedCount] = useState(0)
   const [assetsReady, setAssetsReady] = useState(false)
@@ -35,13 +36,19 @@ export default function BootCurtain({
     ? interfaceCopy.bootReady[language]
     : `${progress.toString().padStart(3, '0')}% / ${loadedCount.toString().padStart(2, '0')} / ${totalSources.toString().padStart(2, '0')}`
 
-  const handleEnter = () => {
+  const handleEnter = useCallback(() => {
     if (!ready) {
       return
     }
 
     onEnter()
-  }
+  }, [ready, onEnter])
+
+  useEffect(() => {
+    if (phase === 'closed') {
+      dialogRef.current?.focus()
+    }
+  }, [phase])
 
   useEffect(() => {
     if (phase !== 'closed') {
@@ -168,8 +175,10 @@ export default function BootCurtain({
 
   return createPortal(
     <div
-      aria-label="opening curtain"
+      aria-label={interfaceCopy.bootStamp[language]}
+      aria-modal="true"
       className={`boot-curtain boot-curtain--${phase}`}
+      ref={dialogRef}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowUp') {
           event.preventDefault()
