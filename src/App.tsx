@@ -224,6 +224,12 @@ function AppFrame() {
           </Routes>
         </Suspense>
       </main>
+
+      <div className="dreamcore-veil" aria-hidden="true">
+        <div className="dreamcore-veil__mist" />
+        <div className="dreamcore-veil__bloom" />
+        <div className="dreamcore-veil__glass" />
+      </div>
     </div>
   )
 }
