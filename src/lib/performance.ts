@@ -103,21 +103,12 @@ export function detectPerformanceProfile(): PerformanceProfile {
   }
 }
 
-export function normalizeMediaPath(path?: string) {
+export function getMediaFallbackPath(path?: string) {
   if (!path) {
     return undefined
   }
 
-  return path
-}
-
-export function getMediaFallbackPath(path?: string) {
-  const normalized = normalizeMediaPath(path)
-  if (!normalized) {
-    return undefined
-  }
-
-  return MEDIA_FALLBACKS[normalized]
+  return MEDIA_FALLBACKS[path]
 }
 
 export function isVideoPath(path?: string) {
@@ -129,8 +120,7 @@ export function shouldSkipHighCostMedia(path: string, profile: PerformanceProfil
     return false
   }
 
-  const normalized = normalizeMediaPath(path)
-  return Boolean(normalized && HIGH_COST_MEDIA.has(normalized))
+  return HIGH_COST_MEDIA.has(path)
 }
 
 export function buildMediaQueue(
@@ -146,18 +136,16 @@ export function buildMediaQueue(
   const seen = new Set<string>()
 
   paths.forEach((path) => {
-    const normalized = normalizeMediaPath(path)
-
-    if (!normalized || seen.has(normalized)) {
+    if (!path || seen.has(path)) {
       return
     }
 
-    if (!includeHighCost && shouldSkipHighCostMedia(normalized, profile)) {
+    if (!includeHighCost && shouldSkipHighCostMedia(path, profile)) {
       return
     }
 
-    seen.add(normalized)
-    queue.push(normalized)
+    seen.add(path)
+    queue.push(path)
   })
 
   return queue.slice(0, limit)
@@ -176,7 +164,7 @@ export function withBase(path?: string) {
     return path
   }
 
-  return `${getBasePrefix()}${path}` || path
+  return `${getBasePrefix()}${path}`
 }
 
 export function shouldUseHashRouting() {

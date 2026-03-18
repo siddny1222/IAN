@@ -31,10 +31,20 @@ export default function SceneCard({
   const performanceProfile = usePerformanceProfile()
   const coordinate = pickLocalized(scene.coordinate, language)
   const titleParts = fragmentText(pickLocalized(scene.title, language))
+
+  const primeScene = () => {
+    void primeThemeSceneRoute()
+    void primeMedia(buildMediaQueue(
+      [scene.media.still, scene.media.texture, scene.media.overlay, scene.media.relic],
+      performanceProfile,
+      { limit: 4 },
+    ))
+  }
   const toneStyle = {
     '--card-a': scene.palette[0],
     '--card-b': scene.palette[1],
-    '--card-c': scene.palette[3],
+    '--card-c': scene.palette[2],
+    '--card-d': scene.palette[3],
     ...style,
   } as CSSProperties
 
@@ -61,30 +71,9 @@ export default function SceneCard({
         className={`scene-card ${compact ? 'scene-card--compact' : ''}`}
         data-tone={scene.tone}
         disabled={disabled}
-        onFocus={() => {
-          void primeThemeSceneRoute()
-          void primeMedia(buildMediaQueue(
-            [scene.media.still, scene.media.texture, scene.media.overlay, scene.media.relic],
-            performanceProfile,
-            { limit: 4 },
-          ))
-        }}
-        onMouseEnter={() => {
-          void primeThemeSceneRoute()
-          void primeMedia(buildMediaQueue(
-            [scene.media.still, scene.media.texture, scene.media.overlay, scene.media.relic],
-            performanceProfile,
-            { limit: 4 },
-          ))
-        }}
-        onTouchStart={() => {
-          void primeThemeSceneRoute()
-          void primeMedia(buildMediaQueue(
-            [scene.media.still, scene.media.texture, scene.media.overlay, scene.media.relic],
-            performanceProfile,
-            { limit: 4 },
-          ))
-        }}
+        onFocus={primeScene}
+        onMouseEnter={primeScene}
+        onTouchStart={primeScene}
         onClick={() => onActivate(scene)}
         style={toneStyle}
         type="button"
@@ -98,30 +87,9 @@ export default function SceneCard({
     <Link
       className={`scene-card ${compact ? 'scene-card--compact' : ''}`}
       data-tone={scene.tone}
-      onFocus={() => {
-        void primeThemeSceneRoute()
-        void primeMedia(buildMediaQueue(
-          [scene.media.still, scene.media.texture, scene.media.overlay, scene.media.relic],
-          performanceProfile,
-          { limit: 4 },
-        ))
-      }}
-      onMouseEnter={() => {
-        void primeThemeSceneRoute()
-        void primeMedia(buildMediaQueue(
-          [scene.media.still, scene.media.texture, scene.media.overlay, scene.media.relic],
-          performanceProfile,
-          { limit: 4 },
-        ))
-      }}
-      onTouchStart={() => {
-        void primeThemeSceneRoute()
-        void primeMedia(buildMediaQueue(
-          [scene.media.still, scene.media.texture, scene.media.overlay, scene.media.relic],
-          performanceProfile,
-          { limit: 4 },
-        ))
-      }}
+      onFocus={primeScene}
+      onMouseEnter={primeScene}
+      onTouchStart={primeScene}
       style={toneStyle}
       to={scene.path}
     >

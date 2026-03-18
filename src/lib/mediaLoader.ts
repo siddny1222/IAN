@@ -1,4 +1,4 @@
-import { normalizeMediaPath, withBase } from './performance'
+import { withBase } from './performance'
 
 const mediaCache = new Map<string, Promise<void>>()
 
@@ -13,21 +13,19 @@ type IdleWindow = Window & {
 }
 
 function primeOne(path: string) {
-  const normalizedPath = normalizeMediaPath(path)
-
-  if (!normalizedPath) {
+  if (!path) {
     return Promise.resolve()
   }
 
-  if (mediaCache.has(normalizedPath)) {
-    return mediaCache.get(normalizedPath)!
+  if (mediaCache.has(path)) {
+    return mediaCache.get(path)!
   }
 
   const task = new Promise<void>((resolve) => {
     const finish = () => resolve()
-    const resolvedPath = withBase(normalizedPath)
+    const resolvedPath = withBase(path)
 
-    if (/\.(mp4|mov|webm)$/i.test(normalizedPath)) {
+    if (/\.(mp4|mov|webm)$/i.test(path)) {
       const video = document.createElement('video')
       const done = () => {
         video.removeEventListener('loadeddata', done)
@@ -64,7 +62,7 @@ function primeOne(path: string) {
     }
   })
 
-  mediaCache.set(normalizedPath, task)
+  mediaCache.set(path, task)
   return task
 }
 

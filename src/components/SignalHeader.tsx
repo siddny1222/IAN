@@ -58,39 +58,24 @@ export default function SignalHeader({ activeDimension }: SignalHeaderProps) {
       >
         {visibleDimensions.map((dimension) => {
           const dimensionTitle = pickLocalized(dimension.title, language)
+          const primeDimension = () => {
+            void primeThemeSceneRoute()
+            void primeMedia(buildMediaQueue([
+              dimension.media.still,
+              dimension.media.texture,
+              dimension.media.overlay,
+              dimension.media.relic,
+            ], performanceProfile, { limit: 4 }))
+          }
 
           return (
             <Link
               className={activeDimension?.slug === dimension.slug ? 'is-active' : ''}
               data-ghost-text={dimensionTitle}
               key={dimension.slug}
-              onFocus={() => {
-                void primeThemeSceneRoute()
-                void primeMedia(buildMediaQueue([
-                  dimension.media.still,
-                  dimension.media.texture,
-                  dimension.media.overlay,
-                  dimension.media.relic,
-                ], performanceProfile, { limit: 4 }))
-              }}
-              onMouseEnter={() => {
-                void primeThemeSceneRoute()
-                void primeMedia(buildMediaQueue([
-                  dimension.media.still,
-                  dimension.media.texture,
-                  dimension.media.overlay,
-                  dimension.media.relic,
-                ], performanceProfile, { limit: 4 }))
-              }}
-              onTouchStart={() => {
-                void primeThemeSceneRoute()
-                void primeMedia(buildMediaQueue([
-                  dimension.media.still,
-                  dimension.media.texture,
-                  dimension.media.overlay,
-                  dimension.media.relic,
-                ], performanceProfile, { limit: 4 }))
-              }}
+              onFocus={primeDimension}
+              onMouseEnter={primeDimension}
+              onTouchStart={primeDimension}
               to={dimension.path}
             >
               {dimensionTitle}

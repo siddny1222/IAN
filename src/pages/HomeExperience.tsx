@@ -94,7 +94,11 @@ const deferredHomeLoadingSources = Array.from(
   ),
 )
 
-let hasOpenedCurtainThisSession = false
+const CURTAIN_SESSION_KEY = 'ian.curtain.opened'
+
+function hasOpenedCurtainThisSession() {
+  return typeof sessionStorage !== 'undefined' && sessionStorage.getItem(CURTAIN_SESSION_KEY) === '1'
+}
 
 export default function HomeExperience() {
   const navigate = useNavigate()
@@ -102,11 +106,11 @@ export default function HomeExperience() {
   const performanceProfile = usePerformanceProfile()
   const { language } = useLocale()
   const previewOpen = new URLSearchParams(location.search).get('preview') === 'open'
-  const [curtainPhase, setCurtainPhase] = useState<'closed' | 'opening' | 'open'>(
-    previewOpen || hasOpenedCurtainThisSession ? 'open' : 'closed',
+  const [curtainPhase, setCurtainPhase] = useState<'closed' | 'opening' | 'open'>(() =>
+    previewOpen || hasOpenedCurtainThisSession() ? 'open' : 'closed',
   )
-  const [homeLayer, setHomeLayer] = useState<0 | 1 | 2 | 3>(
-    previewOpen || hasOpenedCurtainThisSession ? 1 : 0,
+  const [homeLayer, setHomeLayer] = useState<0 | 1 | 2 | 3>(() =>
+    previewOpen || hasOpenedCurtainThisSession() ? 1 : 0,
   )
   const [launchingScene, setLaunchingScene] = useState<Dimension | null>(null)
   const showExperience = curtainPhase !== 'closed'
@@ -198,6 +202,8 @@ export default function HomeExperience() {
       }),
     ]).then(() => {
       navigate(scene.path, { state: { fromHub: true } })
+    }).catch(() => {
+      navigate(scene.path, { state: { fromHub: true } })
     })
   }
 
@@ -206,7 +212,7 @@ export default function HomeExperience() {
       return
     }
 
-    hasOpenedCurtainThisSession = true
+    sessionStorage.setItem(CURTAIN_SESSION_KEY, '1')
     setCurtainPhase('opening')
     window.setTimeout(() => {
       setCurtainPhase('open')
@@ -215,6 +221,14 @@ export default function HomeExperience() {
 
   const hiddenRouteLabel = pickLocalized(interfaceCopy.hiddenRoute, language)
   const archiveLabel = pickLocalized(interfaceCopy.archiveLabel, language)
+  const primeHiddenScene = hiddenScene
+    ? () => void primeMedia(buildMediaQueue([
+        hiddenScene.media.still,
+        hiddenScene.media.texture,
+        hiddenScene.media.overlay,
+        hiddenScene.media.relic,
+      ], performanceProfile, { limit: 4 }))
+    : undefined
 
   if (!showExperience) {
     return (
@@ -297,30 +311,9 @@ export default function HomeExperience() {
             <button
               className="home-stage__fault xp-button xp-button--mini"
               data-ghost-text={hiddenRouteLabel}
-              onFocus={() => {
-                void primeMedia(buildMediaQueue([
-                  hiddenScene.media.still,
-                  hiddenScene.media.texture,
-                  hiddenScene.media.overlay,
-                  hiddenScene.media.relic,
-                ], performanceProfile, { limit: 4 }))
-              }}
-              onMouseEnter={() => {
-                void primeMedia(buildMediaQueue([
-                  hiddenScene.media.still,
-                  hiddenScene.media.texture,
-                  hiddenScene.media.overlay,
-                  hiddenScene.media.relic,
-                ], performanceProfile, { limit: 4 }))
-              }}
-              onTouchStart={() => {
-                void primeMedia(buildMediaQueue([
-                  hiddenScene.media.still,
-                  hiddenScene.media.texture,
-                  hiddenScene.media.overlay,
-                  hiddenScene.media.relic,
-                ], performanceProfile, { limit: 4 }))
-              }}
+              onFocus={primeHiddenScene}
+              onMouseEnter={primeHiddenScene}
+              onTouchStart={primeHiddenScene}
               onClick={() => launchScene(hiddenScene)}
               type="button"
             >
