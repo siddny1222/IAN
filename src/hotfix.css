@@ -391,6 +391,132 @@ body.curtain-active .dreamcore-veil {
     0 0 24px rgba(255, 255, 255, 0.04);
 }
 
+/* round three: fix threshold framing, archive clipping, and dreamfield artifact crop */
+.boot-curtain__center::before,
+.boot-curtain__center::after {
+  display: none;
+}
+
+.boot-curtain__actions {
+  margin-top: 8px;
+}
+
+.boot-curtain__button.xp-button {
+  min-height: 52px;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 18px 34px rgba(0, 0, 0, 0.28),
+    0 0 24px rgba(255, 255, 255, 0.04);
+  background:
+    linear-gradient(180deg, rgba(14, 15, 22, 0.88), rgba(8, 9, 14, 0.74)),
+    radial-gradient(circle at 18% 30%, rgba(255, 244, 226, 0.08), transparent 22%),
+    radial-gradient(circle at 78% 28%, rgba(190, 226, 255, 0.08), transparent 20%);
+  color: rgba(247, 243, 236, 0.9);
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 18px rgba(0, 0, 0, 0.24);
+}
+
+.boot-curtain__button.xp-button:hover,
+.boot-curtain__button.xp-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 22px 38px rgba(0, 0, 0, 0.32),
+    0 0 28px rgba(255, 255, 255, 0.06);
+  filter: none;
+}
+
+.boot-curtain__button.xp-button:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 10px 18px rgba(0, 0, 0, 0.24);
+}
+
+.boot-curtain__button.xp-button::after {
+  opacity: 0.72;
+}
+
+.home-archive {
+  overflow: visible;
+}
+
+.home-archive .section-heading {
+  position: relative;
+  z-index: 18;
+}
+
+.home-archive__board {
+  min-height: 910px;
+  margin-top: 22px;
+  padding-top: 56px;
+  overflow: visible;
+}
+
+.home-archive__board .asset-fragment {
+  --archive-shift-y: 0px;
+  transform: translate3d(0, var(--archive-shift-y), 0) rotate(var(--fragment-r, 0deg));
+}
+
+.home-archive__board .asset-fragment:nth-child(-n + 6) {
+  --archive-shift-y: 34px;
+}
+
+.home-archive__board .asset-fragment:hover,
+.home-archive__board .asset-fragment:focus-visible {
+  transform: translate3d(0, calc(var(--archive-shift-y) - 6px), 100px) rotate(calc(var(--fragment-r, 0deg) * 0.72)) scale(1.024);
+}
+
+.home-archive__board .asset-fragment.is-active {
+  z-index: 24;
+  transform: translate3d(0, calc(var(--archive-shift-y) - 10px), 160px) rotate(calc(var(--fragment-r, 0deg) * 0.48)) scale(1.05);
+}
+
+.dimension-page--dreamfield .dimension-hero {
+  min-height: 860px;
+}
+
+.dimension-page--dreamfield .dimension-hero__media {
+  min-height: 760px;
+  overflow: visible;
+}
+
+.dimension-page--dreamfield .dimension-hero__stack {
+  inset: 0 0 8% 24%;
+}
+
+.dimension-page--dreamfield .dimension-hero__artifact {
+  width: min(28vw, 332px);
+  height: min(42vh, 356px);
+}
+
+.dimension-page--dreamfield .dimension-hero__artifact:nth-child(2) {
+  --artifact-x: -146px;
+  --artifact-y: -38px;
+}
+
+.dimension-page--dreamfield .dimension-hero__artifact:nth-child(3) {
+  --artifact-x: 20px;
+  --artifact-y: 92px;
+}
+
+.dimension-page--dreamfield .dimension-hero__artifact:nth-child(4) {
+  --artifact-x: 178px;
+  --artifact-y: -8px;
+}
+
+.dimension-page--dreamfield .dimension-hero__artifact.is-active {
+  transform:
+    translate3d(calc(-50% + var(--artifact-x) * 0.72), calc(-50% + var(--artifact-y) * 0.7), 220px)
+    rotate(calc(var(--artifact-r) * 0.24))
+    rotateX(2deg)
+    rotateY(-4deg)
+    scale(1.04);
+}
+
 @media (max-width: 1120px) {
   .boot-curtain__polyglot {
     width: min(42vw, 420px);
@@ -403,6 +529,18 @@ body.curtain-active .dreamcore-veil {
 
   .home-stage__portals {
     min-height: 920px;
+  }
+
+  .dimension-page--dreamfield .dimension-hero__stack {
+    inset: 0 0 10% 20%;
+  }
+
+  .dimension-page--dreamfield .dimension-hero__artifact:nth-child(2) {
+    --artifact-x: -124px;
+  }
+
+  .dimension-page--dreamfield .dimension-hero__artifact:nth-child(4) {
+    --artifact-x: 150px;
   }
 }
 
@@ -518,6 +656,27 @@ body.curtain-active .dreamcore-veil {
 
   .home-archive__board {
     min-height: auto;
+    padding-top: 0;
+  }
+
+  .home-archive__board .asset-fragment,
+  .home-archive__board .asset-fragment:hover,
+  .home-archive__board .asset-fragment:focus-visible,
+  .home-archive__board .asset-fragment.is-active {
+    --archive-shift-y: 0px;
+    transform: rotate(-1deg);
+  }
+
+  .dimension-page--dreamfield .dimension-hero {
+    min-height: auto;
+  }
+
+  .dimension-page--dreamfield .dimension-hero__media {
+    min-height: 360px;
+  }
+
+  .dimension-page--dreamfield .dimension-hero__stack {
+    inset: auto;
   }
 }
 
