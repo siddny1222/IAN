@@ -1,0 +1,213 @@
+:root {
+  --hotfix-shell-width: min(1540px, calc(100vw - 40px));
+}
+
+html,
+body,
+#root,
+.app-shell {
+  min-height: 100dvh;
+}
+
+body {
+  overflow-x: clip;
+}
+
+.app-main {
+  width: var(--hotfix-shell-width);
+  padding-bottom: 96px;
+}
+
+.app-main,
+.signal-header {
+  isolation: isolate;
+}
+
+.app-atmosphere::before {
+  filter: blur(32px);
+  opacity: 0.52;
+}
+
+.app-atmosphere::after {
+  opacity: 0.12;
+}
+
+.app-atmosphere__video {
+  opacity: 0.28;
+  filter: saturate(0.82) contrast(0.9) brightness(0.4);
+}
+
+.app-atmosphere__noise {
+  opacity: 0.08;
+}
+
+.app-atmosphere__ghost {
+  opacity: 0.045;
+}
+
+.route-veil {
+  z-index: 12;
+}
+
+.route-veil--leaving {
+  opacity: 0.34;
+}
+
+.route-veil--entering {
+  opacity: 0.08;
+}
+
+.route-veil__noise {
+  opacity: 0.14;
+}
+
+.route-veil__ghost {
+  opacity: 0.08;
+  filter: blur(3px);
+}
+
+.route-veil__still {
+  opacity: 0.08;
+  filter: saturate(1.02) blur(4px);
+}
+
+.dreamcore-veil {
+  z-index: 6;
+}
+
+.dreamcore-veil__fog-far {
+  opacity: 0.4;
+  filter: blur(64px);
+}
+
+.dreamcore-veil__fog-near {
+  opacity: 0.22;
+  filter: blur(14px);
+}
+
+.dreamcore-veil__chroma {
+  opacity: 0.18;
+}
+
+.dreamcore-veil__bloom {
+  opacity: 0.42;
+}
+
+.dreamcore-veil__surface {
+  opacity: 0.42;
+}
+
+.dreamcore-veil__surface::before {
+  opacity: 0.22;
+}
+
+.dreamcore-veil__surface::after {
+  background: radial-gradient(
+    ellipse 76% 72% at 50% 50%,
+    transparent 26%,
+    rgba(4, 2, 10, 0.14) 58%,
+    rgba(4, 2, 10, 0.44) 100%
+  );
+}
+
+body.curtain-active .dreamcore-veil {
+  opacity: 0.45;
+}
+
+.scene-card,
+.dimension-panel,
+.dimension-hero__artifact,
+.asset-fragment,
+.dimension-slice {
+  backdrop-filter: blur(3px);
+}
+
+.scene-card:hover,
+.scene-card:focus-visible,
+.dimension-panel:hover,
+.dimension-panel:focus-visible,
+.asset-fragment:hover,
+.asset-fragment:focus-visible,
+.asset-fragment.is-active,
+.dimension-hero__artifact:hover:not(.is-active),
+.dimension-hero__artifact:focus-visible:not(.is-active),
+.dimension-hero__artifact.is-hovered:not(.is-active) {
+  filter: brightness(1.02) saturate(1.03);
+}
+
+.home-stage,
+.boot-curtain__copy,
+.dimension-page {
+  min-height: 100dvh;
+}
+
+.signal-header__brand-cluster,
+.signal-header__controls,
+.signal-header__drift {
+  text-shadow: 0 0 14px rgba(0, 0, 0, 0.34);
+}
+
+@media (max-width: 820px) {
+  :root {
+    --hotfix-shell-width: calc(100vw - 16px);
+  }
+
+  .app-main {
+    padding-bottom: 124px;
+  }
+
+  .dreamcore-veil {
+    display: none;
+  }
+
+  .app-atmosphere::before {
+    filter: blur(18px);
+    opacity: 0.34;
+  }
+
+  .app-atmosphere__video {
+    opacity: 0.2;
+    transform: scale(1.02);
+  }
+
+  .app-atmosphere__noise,
+  .app-atmosphere__ghost,
+  .route-veil__noise,
+  .route-veil__ghost {
+    display: none;
+  }
+
+  .signal-header__controls {
+    bottom: 78px;
+  }
+
+  .signal-header__drift {
+    gap: 8px 12px;
+  }
+
+  .home-stage {
+    min-height: auto;
+    padding-top: 122px;
+  }
+
+  .boot-curtain__copy,
+  .dimension-page {
+    min-height: 100dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dreamcore-veil__fog-far,
+  .dreamcore-veil__fog-near,
+  .dreamcore-veil__chroma,
+  .dreamcore-veil__bloom,
+  .dreamcore-veil__surface,
+  .dreamcore-veil__surface::before,
+  .dreamcore-veil__surface::after {
+    animation: none !important;
+  }
+
+  .dreamcore-veil {
+    display: none;
+  }
+}
