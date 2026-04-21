@@ -26,8 +26,6 @@ export default function SignalHeader({ activeDimension }: SignalHeaderProps) {
   const brandStamp = pickLocalized(interfaceCopy.brandStamp, language)
   const driftLabel = pickLocalized(interfaceCopy.driftLabel, language)
   const localeLabel = pickLocalized(interfaceCopy.localeLabel, language)
-  const hiddenScene = dimensions.find((dimension) => dimension.hidden)
-
   return (
     <header className="signal-header">
       <div className="signal-header__brand-cluster">

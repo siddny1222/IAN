@@ -118,7 +118,6 @@ export default function HomeExperience() {
   const [activeSlice, setActiveSlice] = useState(0)
   const showExperience = curtainPhase !== 'closed'
 
-  const hiddenScene = dimensions.find((dimension) => dimension.hidden)
   const featuredArchive = homeArchiveCollageIds
     .map((id) => assetArchiveById.get(id))
     .filter((asset): asset is ArchiveAsset => Boolean(asset))
@@ -348,44 +347,6 @@ export default function HomeExperience() {
         </div>
       </section>
 
-      <section className="home-archive">
-        <div className="section-heading">
-          <span data-ghost-text={archiveLabel}>{archiveLabel}</span>
-        </div>
-        <div className="home-archive__board">
-          {featuredArchive.map((asset, index) => {
-            const placement = archivePlacements[index % archivePlacements.length]
-
-            return (
-              <button
-                aria-label={pickLocalized(asset.label, language)}
-                aria-pressed={activeArchive === asset.id}
-                className={`asset-fragment asset-fragment--${asset.type} ${
-                  activeArchive === asset.id ? 'is-active' : ''
-                }`}
-                data-tone={asset.tone}
-                key={asset.id}
-                onClick={() => setActiveArchive(asset.id)}
-                onMouseEnter={() => setActiveArchive(asset.id)}
-                style={
-                  {
-                    '--fragment-x': placement.x,
-                    '--fragment-y': placement.y,
-                    '--fragment-w': placement.w,
-                    '--fragment-h': placement.h,
-                    '--fragment-r': `${placement.rotate}deg`,
-                    '--fragment-depth': placement.depth,
-                  } as CSSProperties
-                }
-                type="button"
-              >
-                <AssetPreview active={activeArchive === asset.id} asset={asset} />
-              </button>
-            )
-          })}
-        </div>
-      </section>
-
       <section className="home-slices">
         <div className="home-slices__viewport">
           <div className="home-slices__track" style={{ transform: `translateX(-${activeSlice * 100}%)` }}>
@@ -424,6 +385,46 @@ export default function HomeExperience() {
           </div>
         </div>
       </section>
+
+      <section className="home-archive">
+        <div className="section-heading">
+          <span data-ghost-text={archiveLabel}>{archiveLabel}</span>
+        </div>
+        <div className="home-archive__board">
+          {featuredArchive.map((asset, index) => {
+            const placement = archivePlacements[index % archivePlacements.length]
+
+            return (
+              <button
+                aria-label={pickLocalized(asset.label, language)}
+                aria-pressed={activeArchive === asset.id}
+                className={`asset-fragment asset-fragment--${asset.type} ${
+                  activeArchive === asset.id ? 'is-active' : ''
+                }`}
+                data-tone={asset.tone}
+                key={asset.id}
+                onClick={() => setActiveArchive(asset.id)}
+                onMouseEnter={() => setActiveArchive(asset.id)}
+                style={
+                  {
+                    '--fragment-x': placement.x,
+                    '--fragment-y': placement.y,
+                    '--fragment-w': placement.w,
+                    '--fragment-h': placement.h,
+                    '--fragment-r': `${placement.rotate}deg`,
+                    '--fragment-depth': placement.depth,
+                  } as CSSProperties
+                }
+                type="button"
+              >
+                <AssetPreview active={activeArchive === asset.id} asset={asset} />
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      
 
       {launchingScene ? (
         <div className="launch-overlay" aria-hidden="true">

@@ -138,6 +138,10 @@ export default function ThemeScene() {
   const motifLabel = pickLocalized(interfaceCopy.motifLabel, language)
   const returnHomeLabel = pickLocalized(interfaceCopy.returnHome, language)
   const ambientCloud = scene ? pickLocalizedList(scene.ambientWords, language) : []
+  const visualCloud = scene ? pickLocalizedList(scene.visualMotifs, language) : []
+  const interactionCloud = scene ? pickLocalizedList(scene.interactionMotifs, language) : []
+  const internetCloud = scene ? pickLocalizedList(scene.internetArtifacts, language) : []
+  const physicalCloud = scene ? pickLocalizedList(scene.physicalArtifacts, language) : []
   const sceneEssence = scene && scene.slug in sceneEssenceBySlug
     ? sceneEssenceBySlug[scene.slug as keyof typeof sceneEssenceBySlug]
     : null
@@ -340,12 +344,22 @@ export default function ThemeScene() {
             <p data-ghost-text={sceneEssence ? pickLocalized(sceneEssence.style, language) : ''}>
               {sceneEssence ? pickLocalized(sceneEssence.style, language) : ''}
             </p>
+            <ul>
+              {[...visualCloud.slice(0, 2), ...interactionCloud.slice(0, 2)].map((entry, index) => (
+                <li data-ghost-text={entry} key={`${entry}-${index}`}>{entry}</li>
+              ))}
+            </ul>
           </article>
           <article className="dimension-textbox">
             <span data-ghost-text={motifLabel}>{motifLabel}</span>
             <p data-ghost-text={sceneEssence ? pickLocalized(sceneEssence.motif, language) : ''}>
               {sceneEssence ? pickLocalized(sceneEssence.motif, language) : ''}
             </p>
+            <ul>
+              {[...internetCloud.slice(0, 2), ...physicalCloud.slice(0, 2)].map((entry, index) => (
+                <li data-ghost-text={entry} key={`${entry}-${index}`}>{entry}</li>
+              ))}
+            </ul>
           </article>
         </div>
       </section>
