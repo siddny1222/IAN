@@ -45,7 +45,10 @@ export default function BootCurtain({
   }, [ready, onEnter])
 
   const handleEnterRef = useRef(handleEnter)
-  handleEnterRef.current = handleEnter
+
+  useEffect(() => {
+    handleEnterRef.current = handleEnter
+  }, [handleEnter])
 
   useEffect(() => {
     if (phase === 'closed') {
