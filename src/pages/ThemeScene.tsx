@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import AdaptiveMedia from '../components/AdaptiveMedia'
@@ -311,6 +312,13 @@ export default function ThemeScene() {
                 onFocus={() => setHoveredArtifact(index)}
                 onMouseEnter={() => setHoveredArtifact(index)}
                 onMouseLeave={() => setHoveredArtifact((current) => (current === index ? null : current))}
+                style={
+                  {
+                    '--artifact-x': `${(index - 1) * 210}px`,
+                    '--artifact-y': `${index % 2 === 0 ? -36 : 54}px`,
+                    '--artifact-layer': `${heroArtifacts.length - index}`,
+                  } as CSSProperties
+                }
                 type="button"
               >
                 <MediaSurface

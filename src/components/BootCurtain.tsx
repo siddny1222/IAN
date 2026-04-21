@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import AdaptiveMedia from './AdaptiveMedia'
@@ -35,6 +36,7 @@ export default function BootCurtain({
   const statusLabel = ready
     ? interfaceCopy.bootReady[language]
     : `${progress.toString().padStart(3, '0')}% / ${loadedCount.toString().padStart(2, '0')} / ${totalSources.toString().padStart(2, '0')}`
+  const mosaicTiles = Array.from({ length: 72 }, (_, index) => index)
 
   const handleEnter = useCallback(() => {
     if (!ready) {
@@ -248,6 +250,20 @@ export default function BootCurtain({
           path="/media/222.gif"
           staticFallback="/media/ian-glitch-still.png"
         />
+      ) : null}
+      {performanceProfile.allowHeavyMotion ? (
+        <div className="boot-curtain__mosaic" aria-hidden="true">
+          {mosaicTiles.map((tile) => (
+            <span
+              key={tile}
+              style={
+                {
+                  '--mosaic-delay': `${(tile % 12) * 28 + Math.floor(tile / 12) * 12}ms`,
+                } as CSSProperties
+              }
+            />
+          ))}
+        </div>
       ) : null}
       <div className="boot-curtain__veil" aria-hidden="true"></div>
 

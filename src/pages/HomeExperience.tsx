@@ -114,6 +114,7 @@ export default function HomeExperience() {
     previewOpen || hasOpenedCurtainThisSession() ? 1 : 0,
   )
   const [launchingScene, setLaunchingScene] = useState<Dimension | null>(null)
+  const [activeSlice, setActiveSlice] = useState(0)
   const showExperience = curtainPhase !== 'closed'
 
   const hiddenScene = dimensions.find((dimension) => dimension.hidden)
@@ -210,6 +211,18 @@ export default function HomeExperience() {
     })
   }, [curtainPhase, performanceProfile, showExperience])
 
+  useEffect(() => {
+    if (!showExperience) {
+      return
+    }
+
+    const autoplay = window.setInterval(() => {
+      setActiveSlice((current) => (current + 1) % visibleDimensions.length)
+    }, 3600)
+
+    return () => window.clearInterval(autoplay)
+  }, [showExperience])
+
   const launchScene = (scene: Dimension) => {
     if (launchingScene) {
       return
@@ -297,7 +310,18 @@ export default function HomeExperience() {
           </p>
           <h1>
             {['I', 'A', 'N'].map((letter) => (
-              <span data-ghost-text={letter} key={letter}>{letter}</span>
+              <span
+                className="fluid-letter"
+                data-ghost-text={letter}
+                key={letter}
+                onMouseMove={(event) => {
+                  const rect = event.currentTarget.getBoundingClientRect()
+                  event.currentTarget.style.setProperty('--pointer-x', `${event.clientX - rect.left}px`)
+                  event.currentTarget.style.setProperty('--pointer-y', `${event.clientY - rect.top}px`)
+                }}
+              >
+                {letter}
+              </span>
             ))}
           </h1>
           <p className="home-stage__whisper">
@@ -375,27 +399,42 @@ export default function HomeExperience() {
       </section>
 
       <section className="home-slices">
-        {visibleDimensions.map((scene) => (
-          <article className={`dimension-slice dimension-slice--${scene.tone}`} key={scene.slug}>
-            <div className="dimension-slice__media">
-              <AdaptiveMedia className="" loading="lazy" path={scene.media.still} />
-              <AdaptiveMedia className="" loading="lazy" path={scene.media.texture} />
-            </div>
-            <div className="dimension-slice__copy">
-              <span data-ghost-text={pickLocalized(scene.microLabel, language)}>{pickLocalized(scene.microLabel, language)}</span>
-              <h2>
-                {fragmentText(pickLocalized(scene.title, language)).map((part, index) => (
-                  <span data-ghost-text={part} key={`${part}-${index}`}>{part}</span>
-                ))}
-              </h2>
-              <div className="dimension-slice__words" aria-hidden="true">
-                {pickLocalizedList(scene.ambientWords, language).map((word) => (
-                  <i data-ghost-text={word} key={word}>{word}</i>
-                ))}
-              </div>
-            </div>
-          </article>
-        ))}
+        <div className="home-slices__viewport">
+          <div className="home-slices__track" style={{ transform: `translateX(-${activeSlice * 100}%)` }}>
+            {visibleDimensions.map((scene) => (
+              <article className={`dimension-slice dimension-slice--${scene.tone}`} key={scene.slug}>
+                <div className="dimension-slice__media">
+                  <AdaptiveMedia className="" loading="lazy" path={scene.media.still} />
+                  <AdaptiveMedia className="" loading="lazy" path={scene.media.texture} />
+                </div>
+                <div className="dimension-slice__copy">
+                  <span data-ghost-text={pickLocalized(scene.microLabel, language)}>{pickLocalized(scene.microLabel, language)}</span>
+                  <h2>
+                    {fragmentText(pickLocalized(scene.title, language)).map((part, index) => (
+                      <span data-ghost-text={part} key={`${part}-${index}`}>{part}</span>
+                    ))}
+                  </h2>
+                  <div className="dimension-slice__words" aria-hidden="true">
+                    {pickLocalizedList(scene.ambientWords, language).map((word) => (
+                      <i data-ghost-text={word} key={word}>{word}</i>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="home-slices__dots" aria-label="scene carousel">
+            {visibleDimensions.map((scene, index) => (
+              <button
+                aria-label={pickLocalized(scene.title, language)}
+                className={index === activeSlice ? 'is-active' : ''}
+                key={scene.slug}
+                onClick={() => setActiveSlice(index)}
+                type="button"
+              />
+            ))}
+          </div>
+        </div>
       </section>
 
       {launchingScene ? (
