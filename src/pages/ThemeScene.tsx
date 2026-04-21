@@ -63,6 +63,7 @@ export default function ThemeScene() {
   const { language } = useLocale()
   const performanceProfile = usePerformanceProfile()
   const scene = getDimensionBySlug(slug)
+  const motionEnabled = performanceProfile.allowHeavyMotion && !performanceProfile.prefersReducedMotion
   const [sceneLayer, setSceneLayer] = useState<1 | 2 | 3>(1)
   const [activeArtifact, setActiveArtifact] = useState(0)
   const [hoveredArtifact, setHoveredArtifact] = useState<number | null>(null)
@@ -93,7 +94,7 @@ export default function ThemeScene() {
   }, [slug])
 
   useEffect(() => {
-    if (!scene || !performanceProfile.allowHeavyMotion || performanceProfile.prefersReducedMotion) {
+    if (!scene || !motionEnabled) {
       return
     }
     runSoftMotion([
@@ -121,7 +122,7 @@ export default function ThemeScene() {
         staggerMs: 50,
       },
     ])
-  }, [performanceProfile.allowHeavyMotion, performanceProfile.prefersReducedMotion, scene, slug])
+  }, [motionEnabled, scene, slug])
 
   const crossLinks = (scene?.crossLinks ?? [])
     .map((entry) => getDimensionBySlug(entry))
@@ -135,7 +136,9 @@ export default function ThemeScene() {
   const motifLabel = pickLocalized(interfaceCopy.motifLabel, language)
   const returnHomeLabel = pickLocalized(interfaceCopy.returnHome, language)
   const ambientCloud = scene ? pickLocalizedList(scene.ambientWords, language) : []
-  const sceneEssence = scene ? sceneEssenceBySlug[scene.slug as keyof typeof sceneEssenceBySlug] : null
+  const sceneEssence = scene && scene.slug in sceneEssenceBySlug
+    ? sceneEssenceBySlug[scene.slug as keyof typeof sceneEssenceBySlug]
+    : null
   const candidates = [
     { id: 'still', path: scene?.media.still },
     { id: 'illustration', path: scene?.media.illustration },
@@ -203,7 +206,7 @@ export default function ThemeScene() {
         ) : null}
       </div>
 
-      {scene.tone === 'soviet' && performanceProfile.allowHeavyMotion ? (
+      {scene.tone === 'soviet' && motionEnabled ? (
         <div className="dimension-page__cyrillic-field" aria-hidden="true">
           {sovietGlitchWords.map((word) => (
             <span data-text={word} key={word}>
@@ -235,7 +238,7 @@ export default function ThemeScene() {
             className="error-shrine-field__layer error-shrine-field__layer--e"
             path="/media/uploaded/error-shrine-blue-tv.jpg"
           />
-          {performanceProfile.allowHeavyMotion ? (
+          {motionEnabled ? (
             <>
               <AdaptiveMedia
                 className="error-shrine-field__noise"
@@ -256,7 +259,7 @@ export default function ThemeScene() {
           ) : null}
           <span className="error-shrine-field__core"></span>
           <span className="error-shrine-field__scan"></span>
-          {performanceProfile.allowHeavyMotion ? (
+          {motionEnabled ? (
             <>
               <span className="error-shrine-field__beam error-shrine-field__beam--left"></span>
               <span className="error-shrine-field__beam error-shrine-field__beam--right"></span>
