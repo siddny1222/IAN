@@ -68,7 +68,6 @@ export default function ThemeScene() {
   const motionEnabled = performanceProfile.allowHeavyMotion && !performanceProfile.prefersReducedMotion
   const [sceneLayer, setSceneLayer] = useState<1 | 2 | 3>(1)
   const [activeArtifact, setActiveArtifact] = useState(0)
-  const [hoveredArtifact, setHoveredArtifact] = useState<number | null>(null)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
@@ -106,10 +105,10 @@ export default function ThemeScene() {
         options: { duration: 580, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both' },
       },
       {
-        selector: '.dimension-hero__artifact',
-        keyframes: [{ opacity: 0, transform: 'scale(0.95)' }, { opacity: 1, transform: 'scale(1)' }],
+        selector: '.dimension-film__main, .dimension-film__thumb',
+        keyframes: [{ opacity: 0, transform: 'translateY(12px) scale(0.96)' }, { opacity: 1, transform: 'translateY(0) scale(1)' }],
         options: { duration: 620, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both', delay: 80 },
-        staggerMs: 60,
+        staggerMs: 70,
       },
       {
         selector: '.dimension-textbox',
@@ -157,6 +156,7 @@ export default function ThemeScene() {
         array.findIndex((candidate) => candidate.path === entry.path) === index,
     )
     .slice(0, 3)
+  const ctaLabel = pickLocalized(interfaceCopy.enter, language)
   useEffect(() => {
     if (!scene) {
       return
@@ -297,40 +297,36 @@ export default function ThemeScene() {
         </div>
 
         <div className="dimension-hero__media">
-          <div className="dimension-hero__stack">
-            <MediaSurface className="dimension-hero__texture-halo" path={scene.media.texture} />
-            {heroArtifacts.map((artifact, index) => (
-              <button
-                aria-label={`${sceneTitle} ${artifact.id}`}
-                aria-pressed={activeArtifact === index}
-                className={`dimension-hero__artifact ${
-                  activeArtifact === index ? 'is-active' : ''
-                } ${hoveredArtifact === index ? 'is-hovered' : ''} ${
-                  hoveredArtifact === index || activeArtifact === index ? 'is-priority' : ''
-                }`}
-                data-artifact={artifact.id}
-                key={artifact.id}
-                onBlur={() => setHoveredArtifact((current) => (current === index ? null : current))}
-                onClick={() => setActiveArtifact(index)}
-                onFocus={() => setHoveredArtifact(index)}
-                onMouseEnter={() => setHoveredArtifact(index)}
-                onMouseLeave={() => setHoveredArtifact((current) => (current === index ? null : current))}
-                style={
-                  {
-                    '--artifact-x': `${(index - 1) * 210}px`,
-                    '--artifact-y': `${index % 2 === 0 ? -36 : 54}px`,
-                    '--artifact-layer': `${heroArtifacts.length - index}`,
-                  } as CSSProperties
-                }
-                type="button"
-              >
+          <div className="dimension-film">
+            <div className="dimension-film__main">
+              {heroArtifacts[activeArtifact] ? (
                 <MediaSurface
-                  className="dimension-hero__asset"
+                  className="dimension-film__main-asset"
+                  path={heroArtifacts[activeArtifact].path}
                   staticFallback={scene.media.still}
-                  path={artifact.path}
                 />
-              </button>
-            ))}
+              ) : (
+                <MediaSurface className="dimension-film__main-asset" path={scene.media.still} />
+              )}
+            </div>
+            <div className="dimension-film__strip">
+              {heroArtifacts.map((artifact, index) => (
+                <button
+                  aria-label={`${sceneTitle} ${artifact.id}`}
+                  aria-pressed={activeArtifact === index}
+                  className={`dimension-film__thumb ${activeArtifact === index ? 'is-active' : ''}`}
+                  key={artifact.id}
+                  onClick={() => setActiveArtifact(index)}
+                  type="button"
+                >
+                  <MediaSurface
+                    className="dimension-film__thumb-asset"
+                    staticFallback={scene.media.still}
+                    path={artifact.path}
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -349,6 +345,11 @@ export default function ThemeScene() {
                 <li data-ghost-text={entry} key={`${entry}-${index}`}>{entry}</li>
               ))}
             </ul>
+            {crossLinks[0] ? (
+              <Link className="dimension-textbox__cta xp-button xp-button--mini" to={crossLinks[0].path}>
+                {ctaLabel}
+              </Link>
+            ) : null}
           </article>
           <article className="dimension-textbox">
             <span data-ghost-text={motifLabel}>{motifLabel}</span>
@@ -360,6 +361,11 @@ export default function ThemeScene() {
                 <li data-ghost-text={entry} key={`${entry}-${index}`}>{entry}</li>
               ))}
             </ul>
+            {crossLinks[1] ? (
+              <Link className="dimension-textbox__cta xp-button xp-button--mini" to={crossLinks[1].path}>
+                {ctaLabel}
+              </Link>
+            ) : null}
           </article>
         </div>
       </section>
