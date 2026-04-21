@@ -9,6 +9,7 @@ import { useLocale } from '../context/useLocale'
 import { primeMedia, scheduleMediaWarmup } from '../lib/mediaLoader'
 import { buildMediaQueue } from '../lib/performance'
 import { primeThemeSceneRoute } from '../lib/routeModules'
+import { runSoftMotion } from '../lib/softMotion'
 import {
   assetArchiveById,
   dimensions,
@@ -167,6 +168,34 @@ export default function HomeExperience() {
       window.clearTimeout(slicesTimer)
     }
   }, [curtainPhase, showExperience])
+
+  useEffect(() => {
+    if (!showExperience || !performanceProfile.allowHeavyMotion || performanceProfile.prefersReducedMotion) {
+      return
+    }
+    return runSoftMotion([
+      {
+        selector: '.home-stage__intro',
+        keyframes: [{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'translateY(0px)' }],
+        options: { duration: 580, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both' },
+      },
+      {
+        selector: '.home-stage__axes',
+        keyframes: [{ opacity: 0, transform: 'translateX(12px)' }, { opacity: 1, transform: 'translateX(0px)' }],
+        options: { duration: 420, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both', delay: 120 },
+      },
+      {
+        selector: '.home-stage__portals .scene-card',
+        keyframes: [{ opacity: 0, transform: 'translateY(12px) scale(0.98)' }, { opacity: 1, transform: 'translateY(0px) scale(1)' }],
+        options: { duration: 560, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both', delay: 180 },
+        staggerMs: 45,
+      },
+    ])
+  }, [
+    performanceProfile.allowHeavyMotion,
+    performanceProfile.prefersReducedMotion,
+    showExperience,
+  ])
 
   useEffect(() => {
     if (!showExperience) {
