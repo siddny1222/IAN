@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLocale } from '../context/useLocale'
 import { usePerformanceProfile } from '../context/usePerformanceProfile'
 import { primeMedia } from '../lib/mediaLoader'
@@ -7,6 +7,7 @@ import { primeThemeSceneRoute } from '../lib/routeModules'
 import {
   interfaceCopy,
   pickLocalized,
+  dimensions,
   visibleDimensions,
   type Dimension,
   type Language,
@@ -19,11 +20,13 @@ type SignalHeaderProps = {
 const locales: Language[] = ['zh', 'en', 'de']
 
 export default function SignalHeader({ activeDimension }: SignalHeaderProps) {
+  const navigate = useNavigate()
   const { language, setLanguage } = useLocale()
   const performanceProfile = usePerformanceProfile()
   const brandStamp = pickLocalized(interfaceCopy.brandStamp, language)
   const driftLabel = pickLocalized(interfaceCopy.driftLabel, language)
   const localeLabel = pickLocalized(interfaceCopy.localeLabel, language)
+  const hiddenScene = dimensions.find((dimension) => dimension.hidden)
 
   return (
     <header className="signal-header">
@@ -73,6 +76,14 @@ export default function SignalHeader({ activeDimension }: SignalHeaderProps) {
               className={activeDimension?.slug === dimension.slug ? 'is-active' : ''}
               data-ghost-text={dimensionTitle}
               key={dimension.slug}
+              onClick={(event) => {
+                if (!hiddenScene || Math.random() >= 0.2) {
+                  return
+                }
+
+                event.preventDefault()
+                navigate(hiddenScene.path)
+              }}
               onFocus={primeDimension}
               onMouseEnter={primeDimension}
               onTouchStart={primeDimension}

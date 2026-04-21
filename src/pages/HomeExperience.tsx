@@ -186,14 +186,20 @@ export default function HomeExperience() {
       return
     }
 
-    setLaunchingScene(scene)
+    const resolvedScene = hiddenScene
+      && scene.slug !== hiddenScene.slug
+      && Math.random() < 0.2
+      ? hiddenScene
+      : scene
+
+    setLaunchingScene(resolvedScene)
     const routeWarmup = primeThemeSceneRoute()
     const warmup = primeMedia(buildMediaQueue([
-      scene.media.still,
-      scene.media.texture,
-      scene.media.overlay,
-      scene.media.relic,
-      scene.media.illustration,
+      resolvedScene.media.still,
+      resolvedScene.media.texture,
+      resolvedScene.media.overlay,
+      resolvedScene.media.relic,
+      resolvedScene.media.illustration,
     ], performanceProfile, { includeHighCost: true, limit: 5 }))
     void Promise.race([
       Promise.all([routeWarmup, warmup]),
@@ -201,9 +207,9 @@ export default function HomeExperience() {
         window.setTimeout(resolve, 380)
       }),
     ]).then(() => {
-      navigate(scene.path, { state: { fromHub: true } })
+      navigate(resolvedScene.path, { state: { fromHub: true } })
     }).catch(() => {
-      navigate(scene.path, { state: { fromHub: true } })
+      navigate(resolvedScene.path, { state: { fromHub: true } })
     })
   }
 
@@ -219,16 +225,7 @@ export default function HomeExperience() {
     }, 1120)
   }
 
-  const hiddenRouteLabel = pickLocalized(interfaceCopy.hiddenRoute, language)
   const archiveLabel = pickLocalized(interfaceCopy.archiveLabel, language)
-  const primeHiddenScene = hiddenScene
-    ? () => void primeMedia(buildMediaQueue([
-        hiddenScene.media.still,
-        hiddenScene.media.texture,
-        hiddenScene.media.overlay,
-        hiddenScene.media.relic,
-      ], performanceProfile, { limit: 4 }))
-    : undefined
 
   if (!showExperience) {
     return (
@@ -307,19 +304,6 @@ export default function HomeExperience() {
             />
           ))}
 
-          {hiddenScene ? (
-            <button
-              className="home-stage__fault xp-button xp-button--mini"
-              data-ghost-text={hiddenRouteLabel}
-              onFocus={primeHiddenScene}
-              onMouseEnter={primeHiddenScene}
-              onTouchStart={primeHiddenScene}
-              onClick={() => launchScene(hiddenScene)}
-              type="button"
-            >
-              {hiddenRouteLabel}
-            </button>
-          ) : null}
         </div>
       </section>
 
