@@ -4,11 +4,13 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import AdaptiveMedia from '../components/AdaptiveMedia'
 import BootCurtain from '../components/BootCurtain'
 import SceneCard from '../components/SceneCard'
+import SplitFogText from '../components/SplitFogText'
 import { usePerformanceProfile } from '../context/usePerformanceProfile'
 import { useLocale } from '../context/useLocale'
 import { primeMedia, scheduleMediaWarmup } from '../lib/mediaLoader'
 import { buildMediaQueue } from '../lib/performance'
 import { primeThemeSceneRoute } from '../lib/routeModules'
+import { runSoftMotion } from '../lib/softMotion'
 import {
   assetArchiveById,
   dimensions,
@@ -113,9 +115,9 @@ export default function HomeExperience() {
     previewOpen || hasOpenedCurtainThisSession() ? 1 : 0,
   )
   const [launchingScene, setLaunchingScene] = useState<Dimension | null>(null)
+  const [activeSlice, setActiveSlice] = useState(0)
   const showExperience = curtainPhase !== 'closed'
 
-  const hiddenScene = dimensions.find((dimension) => dimension.hidden)
   const featuredArchive = homeArchiveCollageIds
     .map((id) => assetArchiveById.get(id))
     .filter((asset): asset is ArchiveAsset => Boolean(asset))
@@ -169,6 +171,34 @@ export default function HomeExperience() {
   }, [curtainPhase, showExperience])
 
   useEffect(() => {
+    if (!showExperience || !performanceProfile.allowHeavyMotion || performanceProfile.prefersReducedMotion) {
+      return
+    }
+    return runSoftMotion([
+      {
+        selector: '.home-stage__intro',
+        keyframes: [{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'translateY(0px)' }],
+        options: { duration: 580, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both' },
+      },
+      {
+        selector: '.home-stage__axes',
+        keyframes: [{ opacity: 0, transform: 'translateX(12px)' }, { opacity: 1, transform: 'translateX(0px)' }],
+        options: { duration: 420, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both', delay: 120 },
+      },
+      {
+        selector: '.home-stage__portals .scene-card',
+        keyframes: [{ opacity: 0, transform: 'translateY(12px) scale(0.98)' }, { opacity: 1, transform: 'translateY(0px) scale(1)' }],
+        options: { duration: 560, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both', delay: 180 },
+        staggerMs: 45,
+      },
+    ])
+  }, [
+    performanceProfile.allowHeavyMotion,
+    performanceProfile.prefersReducedMotion,
+    showExperience,
+  ])
+
+  useEffect(() => {
     if (!showExperience) {
       return
     }
@@ -180,6 +210,18 @@ export default function HomeExperience() {
       timeout: 1800,
     })
   }, [curtainPhase, performanceProfile, showExperience])
+
+  useEffect(() => {
+    if (!showExperience) {
+      return
+    }
+
+    const autoplay = window.setInterval(() => {
+      setActiveSlice((current) => (current + 1) % visibleDimensions.length)
+    }, 3600)
+
+    return () => window.clearInterval(autoplay)
+  }, [showExperience])
 
   const launchScene = (scene: Dimension) => {
     if (launchingScene) {
@@ -219,16 +261,7 @@ export default function HomeExperience() {
     }, 1120)
   }
 
-  const hiddenRouteLabel = pickLocalized(interfaceCopy.hiddenRoute, language)
   const archiveLabel = pickLocalized(interfaceCopy.archiveLabel, language)
-  const primeHiddenScene = hiddenScene
-    ? () => void primeMedia(buildMediaQueue([
-        hiddenScene.media.still,
-        hiddenScene.media.texture,
-        hiddenScene.media.overlay,
-        hiddenScene.media.relic,
-      ], performanceProfile, { limit: 4 }))
-    : undefined
 
   if (!showExperience) {
     return (
@@ -270,9 +303,7 @@ export default function HomeExperience() {
             {homeSignal}
           </p>
           <h1>
-            {['I', 'A', 'N'].map((letter) => (
-              <span data-ghost-text={letter} key={letter}>{letter}</span>
-            ))}
+            <SplitFogText text="IAN" />
           </h1>
           <p className="home-stage__whisper">
             {homeWhisperParts.map((part, index) => (
@@ -307,19 +338,45 @@ export default function HomeExperience() {
             />
           ))}
 
-          {hiddenScene ? (
-            <button
-              className="home-stage__fault xp-button xp-button--mini"
-              data-ghost-text={hiddenRouteLabel}
-              onFocus={primeHiddenScene}
-              onMouseEnter={primeHiddenScene}
-              onTouchStart={primeHiddenScene}
-              onClick={() => launchScene(hiddenScene)}
-              type="button"
-            >
-              {hiddenRouteLabel}
-            </button>
-          ) : null}
+        </div>
+      </section>
+
+      <section className="home-slices">
+        <div className="home-slices__viewport">
+          <div className="home-slices__track" style={{ transform: `translateX(-${activeSlice * 100}%)` }}>
+            {visibleDimensions.map((scene) => (
+              <article className={`dimension-slice dimension-slice--${scene.tone}`} key={scene.slug}>
+                <div className="dimension-slice__media">
+                  <AdaptiveMedia className="" loading="lazy" path={scene.media.still} />
+                  <AdaptiveMedia className="" loading="lazy" path={scene.media.texture} />
+                </div>
+                <div className="dimension-slice__copy">
+                  <span data-ghost-text={pickLocalized(scene.microLabel, language)}>{pickLocalized(scene.microLabel, language)}</span>
+                  <h2>
+                    {fragmentText(pickLocalized(scene.title, language)).map((part, index) => (
+                      <span data-ghost-text={part} key={`${part}-${index}`}>{part}</span>
+                    ))}
+                  </h2>
+                  <div className="dimension-slice__words" aria-hidden="true">
+                    {pickLocalizedList(scene.ambientWords, language).map((word) => (
+                      <i data-ghost-text={word} key={word}>{word}</i>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="home-slices__dots" aria-label="scene carousel">
+            {visibleDimensions.map((scene, index) => (
+              <button
+                aria-label={pickLocalized(scene.title, language)}
+                className={index === activeSlice ? 'is-active' : ''}
+                key={scene.slug}
+                onClick={() => setActiveSlice(index)}
+                type="button"
+              />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -361,29 +418,7 @@ export default function HomeExperience() {
         </div>
       </section>
 
-      <section className="home-slices">
-        {visibleDimensions.map((scene) => (
-          <article className={`dimension-slice dimension-slice--${scene.tone}`} key={scene.slug}>
-            <div className="dimension-slice__media">
-              <AdaptiveMedia className="" loading="lazy" path={scene.media.still} />
-              <AdaptiveMedia className="" loading="lazy" path={scene.media.texture} />
-            </div>
-            <div className="dimension-slice__copy">
-              <span data-ghost-text={pickLocalized(scene.microLabel, language)}>{pickLocalized(scene.microLabel, language)}</span>
-              <h2>
-                {fragmentText(pickLocalized(scene.title, language)).map((part, index) => (
-                  <span data-ghost-text={part} key={`${part}-${index}`}>{part}</span>
-                ))}
-              </h2>
-              <div className="dimension-slice__words" aria-hidden="true">
-                {pickLocalizedList(scene.ambientWords, language).map((word) => (
-                  <i data-ghost-text={word} key={word}>{word}</i>
-                ))}
-              </div>
-            </div>
-          </article>
-        ))}
-      </section>
+      
 
       {launchingScene ? (
         <div className="launch-overlay" aria-hidden="true">
