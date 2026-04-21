@@ -9,6 +9,7 @@ import { useLocale } from '../context/useLocale'
 import { primeMedia, scheduleMediaWarmup } from '../lib/mediaLoader'
 import { buildMediaQueue } from '../lib/performance'
 import { primeThemeSceneRoute } from '../lib/routeModules'
+import { runSoftMotion } from '../lib/softMotion'
 import {
   assetArchiveById,
   dimensions,
@@ -169,6 +170,34 @@ export default function HomeExperience() {
   }, [curtainPhase, showExperience])
 
   useEffect(() => {
+    if (!showExperience || !performanceProfile.allowHeavyMotion || performanceProfile.prefersReducedMotion) {
+      return
+    }
+    return runSoftMotion([
+      {
+        selector: '.home-stage__intro',
+        keyframes: [{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'translateY(0px)' }],
+        options: { duration: 580, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both' },
+      },
+      {
+        selector: '.home-stage__axes',
+        keyframes: [{ opacity: 0, transform: 'translateX(12px)' }, { opacity: 1, transform: 'translateX(0px)' }],
+        options: { duration: 420, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both', delay: 120 },
+      },
+      {
+        selector: '.home-stage__portals .scene-card',
+        keyframes: [{ opacity: 0, transform: 'translateY(12px) scale(0.98)' }, { opacity: 1, transform: 'translateY(0px) scale(1)' }],
+        options: { duration: 560, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both', delay: 180 },
+        staggerMs: 45,
+      },
+    ])
+  }, [
+    performanceProfile.allowHeavyMotion,
+    performanceProfile.prefersReducedMotion,
+    showExperience,
+  ])
+
+  useEffect(() => {
     if (!showExperience) {
       return
     }
@@ -186,14 +215,20 @@ export default function HomeExperience() {
       return
     }
 
-    setLaunchingScene(scene)
+    const resolvedScene = hiddenScene
+      && scene.slug !== hiddenScene.slug
+      && Math.random() < 0.2
+      ? hiddenScene
+      : scene
+
+    setLaunchingScene(resolvedScene)
     const routeWarmup = primeThemeSceneRoute()
     const warmup = primeMedia(buildMediaQueue([
-      scene.media.still,
-      scene.media.texture,
-      scene.media.overlay,
-      scene.media.relic,
-      scene.media.illustration,
+      resolvedScene.media.still,
+      resolvedScene.media.texture,
+      resolvedScene.media.overlay,
+      resolvedScene.media.relic,
+      resolvedScene.media.illustration,
     ], performanceProfile, { includeHighCost: true, limit: 5 }))
     void Promise.race([
       Promise.all([routeWarmup, warmup]),
@@ -201,9 +236,9 @@ export default function HomeExperience() {
         window.setTimeout(resolve, 380)
       }),
     ]).then(() => {
-      navigate(scene.path, { state: { fromHub: true } })
+      navigate(resolvedScene.path, { state: { fromHub: true } })
     }).catch(() => {
-      navigate(scene.path, { state: { fromHub: true } })
+      navigate(resolvedScene.path, { state: { fromHub: true } })
     })
   }
 
@@ -219,16 +254,7 @@ export default function HomeExperience() {
     }, 1120)
   }
 
-  const hiddenRouteLabel = pickLocalized(interfaceCopy.hiddenRoute, language)
   const archiveLabel = pickLocalized(interfaceCopy.archiveLabel, language)
-  const primeHiddenScene = hiddenScene
-    ? () => void primeMedia(buildMediaQueue([
-        hiddenScene.media.still,
-        hiddenScene.media.texture,
-        hiddenScene.media.overlay,
-        hiddenScene.media.relic,
-      ], performanceProfile, { limit: 4 }))
-    : undefined
 
   if (!showExperience) {
     return (
@@ -307,19 +333,6 @@ export default function HomeExperience() {
             />
           ))}
 
-          {hiddenScene ? (
-            <button
-              className="home-stage__fault xp-button xp-button--mini"
-              data-ghost-text={hiddenRouteLabel}
-              onFocus={primeHiddenScene}
-              onMouseEnter={primeHiddenScene}
-              onTouchStart={primeHiddenScene}
-              onClick={() => launchScene(hiddenScene)}
-              type="button"
-            >
-              {hiddenRouteLabel}
-            </button>
-          ) : null}
         </div>
       </section>
 

@@ -1,11 +1,13 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { usePerformanceProfile } from '../context/usePerformanceProfile'
 import { primeMedia } from '../lib/mediaLoader'
 import { buildMediaQueue, withBase } from '../lib/performance'
 import { primeThemeSceneRoute } from '../lib/routeModules'
 import {
   fragmentText,
+  dimensions,
   pickLocalized,
   type Dimension,
   type Language,
@@ -28,7 +30,9 @@ export default function SceneCard({
   scene,
   style,
 }: SceneCardProps) {
+  const navigate = useNavigate()
   const performanceProfile = usePerformanceProfile()
+  const hiddenScene = dimensions.find((dimension) => dimension.hidden)
   const coordinate = pickLocalized(scene.coordinate, language)
   const titleParts = fragmentText(pickLocalized(scene.title, language))
 
@@ -87,6 +91,14 @@ export default function SceneCard({
     <Link
       className={`scene-card ${compact ? 'scene-card--compact' : ''}`}
       data-tone={scene.tone}
+      onClick={(event) => {
+        if (!hiddenScene || scene.slug === hiddenScene.slug || Math.random() >= 0.2) {
+          return
+        }
+
+        event.preventDefault()
+        navigate(hiddenScene.path)
+      }}
       onFocus={primeScene}
       onMouseEnter={primeScene}
       onTouchStart={primeScene}
