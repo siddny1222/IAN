@@ -5,9 +5,9 @@ import { primeMedia } from '../lib/mediaLoader'
 import { buildMediaQueue } from '../lib/performance'
 import { primeThemeSceneRoute } from '../lib/routeModules'
 import {
+  hiddenDimension,
   interfaceCopy,
   pickLocalized,
-  dimensions,
   visibleDimensions,
   type Dimension,
   type Language,
@@ -75,12 +75,12 @@ export default function SignalHeader({ activeDimension }: SignalHeaderProps) {
               data-ghost-text={dimensionTitle}
               key={dimension.slug}
               onClick={(event) => {
-                if (!hiddenScene || Math.random() >= 0.2) {
+                if (!hiddenDimension || Math.random() >= 0.2) {
                   return
                 }
 
                 event.preventDefault()
-                navigate(hiddenScene.path)
+                navigate(hiddenDimension.path)
               }}
               onFocus={primeDimension}
               onMouseEnter={primeDimension}

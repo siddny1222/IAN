@@ -15,6 +15,7 @@ import {
   assetArchiveById,
   dimensions,
   fragmentText,
+  hiddenDimension,
   homeAxes,
   homeArchiveCollageIds,
   homeGhostWords,
@@ -228,10 +229,10 @@ export default function HomeExperience() {
       return
     }
 
-    const resolvedScene = hiddenScene
-      && scene.slug !== hiddenScene.slug
+    const resolvedScene = hiddenDimension
+      && scene.slug !== hiddenDimension.slug
       && Math.random() < 0.2
-      ? hiddenScene
+      ? hiddenDimension
       : scene
 
     setLaunchingScene(resolvedScene)
