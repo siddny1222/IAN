@@ -7,10 +7,11 @@ import { useLocale } from '../context/useLocale'
 import { scheduleMediaWarmup } from '../lib/mediaLoader'
 import { buildMediaQueue } from '../lib/performance'
 import { primeHomeExperienceRoute } from '../lib/routeModules'
-import { useReveal } from '../lib/useReveal'
 import {
-  dimensionPanelMedia,
   dimensions,
+  dimensionArchiveIntroCopy,
+  dimensionConceptCopy,
+  type DimensionSlug,
   fragmentText,
   getDimensionBySlug,
   interfaceCopy,
@@ -67,9 +68,6 @@ export default function ThemeScene() {
   const [sceneLayer, setSceneLayer] = useState<1 | 2 | 3>(1)
   const [activeArtifact, setActiveArtifact] = useState(0)
   const [hoveredArtifact, setHoveredArtifact] = useState<number | null>(null)
-  const [activePanelId, setActivePanelId] = useState<string | null>(null)
-  const gridReveal = useReveal<HTMLElement>({ threshold: 0.08 })
-  const driftReveal = useReveal<HTMLElement>({ threshold: 0.12 })
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
@@ -104,6 +102,14 @@ export default function ThemeScene() {
   const sceneTitle = scene ? pickLocalized(scene.title, language) : ''
   const sceneCoordinate = scene ? pickLocalized(scene.coordinate, language) : ''
   const sceneSignal = scene ? pickLocalized(scene.signal, language) : ''
+  const sceneConcept = scene
+    ? pickLocalized(dimensionConceptCopy[scene.slug as DimensionSlug], language)
+    : ''
+  const archiveIntro = scene
+    ? pickLocalized(dimensionArchiveIntroCopy[scene.slug as DimensionSlug], language)
+    : ''
+  const archiveLabel = pickLocalized(interfaceCopy.sceneArchiveLabel, language)
+  const conceptLabel = pickLocalized(interfaceCopy.sceneConceptLabel, language)
   const driftLabel = pickLocalized(interfaceCopy.driftLabel, language)
   const hiddenRouteLabel = pickLocalized(interfaceCopy.hiddenRoute, language)
   const returnHomeLabel = pickLocalized(interfaceCopy.returnHome, language)
@@ -112,9 +118,13 @@ export default function ThemeScene() {
   const interactionCloud = scene ? pickLocalizedList(scene.interactionMotifs, language) : []
   const internetCloud = scene ? pickLocalizedList(scene.internetArtifacts, language) : []
   const physicalCloud = scene ? pickLocalizedList(scene.physicalArtifacts, language) : []
-  const panelMedia = scene
-    ? dimensionPanelMedia[scene.slug]
-    : { visual: [], interaction: [], internet: [], physical: [] }
+  const archiveTracks = [
+    { id: 'visual', label: interfaceCopy.visualLabel, words: visualCloud },
+    { id: 'interaction', label: interfaceCopy.interactionLabel, words: interactionCloud },
+    { id: 'internet', label: interfaceCopy.internetLabel, words: internetCloud },
+    { id: 'physical', label: interfaceCopy.physicalLabel, words: physicalCloud },
+  ]
+
   const candidates = [
     { id: 'still', path: scene?.media.still },
     { id: 'illustration', path: scene?.media.illustration },
@@ -126,33 +136,8 @@ export default function ThemeScene() {
         Boolean(entry.path) &&
         array.findIndex((candidate) => candidate.path === entry.path) === index,
     )
-    .slice(0, 3)
-  const panelDeck = [
-    {
-      id: 'visual',
-      label: interfaceCopy.visualLabel,
-      media: panelMedia.visual,
-      words: visualCloud,
-    },
-    {
-      id: 'interaction',
-      label: interfaceCopy.interactionLabel,
-      media: panelMedia.interaction,
-      words: interactionCloud,
-    },
-    {
-      id: 'internet',
-      label: interfaceCopy.internetLabel,
-      media: panelMedia.internet,
-      words: internetCloud,
-    },
-    {
-      id: 'physical',
-      label: interfaceCopy.physicalLabel,
-      media: panelMedia.physical,
-      words: physicalCloud,
-    },
-  ]
+    .slice(0, 2)
+
   useEffect(() => {
     if (!scene) {
       return
@@ -169,7 +154,7 @@ export default function ThemeScene() {
           dimension.media.relic,
         ].filter((path): path is string => Boolean(path)),
       )
-    const localPanels = dimensionPanelMedia[scene.slug]
+
     const warmSources = Array.from(
       new Set(
         [
@@ -177,10 +162,6 @@ export default function ThemeScene() {
           scene.media.overlay,
           scene.media.relic,
           scene.media.illustration,
-          ...localPanels.visual,
-          ...localPanels.interaction,
-          ...localPanels.internet,
-          ...localPanels.physical,
           ...linkedSources,
         ].filter((path): path is string => Boolean(path)),
       ),
@@ -225,53 +206,14 @@ export default function ThemeScene() {
 
       {scene.tone === 'error' ? (
         <div className="error-shrine-field" aria-hidden="true">
-          <AdaptiveMedia
-            className="error-shrine-field__layer error-shrine-field__layer--a"
-            path="/media/uploaded/error-shrine-connected.jpg"
-          />
-          <AdaptiveMedia
-            className="error-shrine-field__layer error-shrine-field__layer--b"
-            path="/media/uploaded/error-shrine-green-face.jpg"
-          />
-          <AdaptiveMedia
-            className="error-shrine-field__layer error-shrine-field__layer--c"
-            path="/media/uploaded/error-shrine-shadow-monitor.jpg"
-          />
-          <AdaptiveMedia
-            className="error-shrine-field__layer error-shrine-field__layer--d"
-            path="/media/uploaded/error-shrine-signal-hand.jpg"
-          />
-          <AdaptiveMedia
-            className="error-shrine-field__layer error-shrine-field__layer--e"
-            path="/media/uploaded/error-shrine-blue-tv.jpg"
-          />
+          <AdaptiveMedia className="error-shrine-field__layer error-shrine-field__layer--a" path="/media/uploaded/error-shrine-connected.jpg" />
+          <AdaptiveMedia className="error-shrine-field__layer error-shrine-field__layer--b" path="/media/uploaded/error-shrine-green-face.jpg" />
+          <AdaptiveMedia className="error-shrine-field__layer error-shrine-field__layer--d" path="/media/uploaded/error-shrine-signal-hand.jpg" />
           {performanceProfile.allowHeavyMotion ? (
-            <>
-              <AdaptiveMedia
-                className="error-shrine-field__noise"
-                path="/media/111.gif"
-                staticFallback="/media/ian-glitch-still.png"
-              />
-              <AdaptiveMedia
-                className="error-shrine-field__noise error-shrine-field__noise--alt"
-                path="/media/222.gif"
-                staticFallback="/media/ian-glitch-still.png"
-              />
-              <AdaptiveMedia
-                className="error-shrine-field__glitch"
-                path="/media/ian-glitch-installation.gif"
-                staticFallback="/media/ian-glitch-still.png"
-              />
-            </>
+            <AdaptiveMedia className="error-shrine-field__glitch" path="/media/ian-glitch-installation.gif" staticFallback="/media/ian-glitch-still.png" />
           ) : null}
           <span className="error-shrine-field__core"></span>
           <span className="error-shrine-field__scan"></span>
-          {performanceProfile.allowHeavyMotion ? (
-            <>
-              <span className="error-shrine-field__beam error-shrine-field__beam--left"></span>
-              <span className="error-shrine-field__beam error-shrine-field__beam--right"></span>
-            </>
-          ) : null}
         </div>
       ) : null}
 
@@ -292,6 +234,10 @@ export default function ThemeScene() {
               ))}
             </p>
           </div>
+          <article className="scene-concept">
+            <small data-ghost-text={conceptLabel}>{conceptLabel}</small>
+            <p>{sceneConcept}</p>
+          </article>
           <div className="dimension-hero__ambient" aria-hidden="true">
             {ambientCloud.map((value, index) => (
               <span data-ghost-text={value} key={`${value}-${index}`}>{value}</span>
@@ -320,86 +266,33 @@ export default function ThemeScene() {
                 onMouseLeave={() => setHoveredArtifact((current) => (current === index ? null : current))}
                 type="button"
               >
-                <MediaSurface
-                  className="dimension-hero__asset"
-                  staticFallback={scene.media.still}
-                  path={artifact.path}
-                />
+                <MediaSurface className="dimension-hero__asset" staticFallback={scene.media.still} path={artifact.path} />
               </button>
             ))}
           </div>
         </div>
       </section>
 
-      <section
-        className={`dimension-grid section-reveal ${gridReveal.revealed ? 'section-reveal--shown' : ''}`}
-        ref={gridReveal.ref}
-      >
-        <div className={`dimension-stack ${activePanelId ? 'has-active' : ''}`}>
-          {panelDeck.map((panel, index) => (
-            <button
-              className={`dimension-panel dimension-panel--${panel.id} ${
-                activePanelId === panel.id ? 'is-active' : ''
-              }`}
-              key={panel.id}
-              onClick={() =>
-                setActivePanelId((current) => (current === panel.id ? null : panel.id))
-              }
-              type="button"
-            >
-              <div className="dimension-panel__face dimension-panel__face--front">
-                <div className="dimension-panel__media" aria-hidden="true">
-                  {panel.media.slice(0, 3).map((path, mediaIndex) => (
-                    <MediaSurface
-                      className={`dimension-panel__asset dimension-panel__asset--${
-                        mediaIndex === 0
-                          ? 'primary'
-                          : mediaIndex === 1
-                            ? 'secondary'
-                            : 'tertiary'
-                      }`}
-                      key={`${panel.id}-${path}-front`}
-                      loading="lazy"
-                      path={path}
-                    />
-                  ))}
-                </div>
-                <span data-ghost-text={pickLocalized(panel.label, language)}>{pickLocalized(panel.label, language)}</span>
-                <strong data-ghost-text={String(index + 1).padStart(2, '0')}>{String(index + 1).padStart(2, '0')}</strong>
+      <section className={`dimension-grid section-reveal ${sceneLayer >= 2 ? 'section-reveal--shown' : ''}`}>
+        <div className="section-heading">
+          <span data-ghost-text={archiveLabel}>{archiveLabel}</span>
+        </div>
+        <p className="dimension-archive__intro">{archiveIntro}</p>
+        <div className="dimension-archive">
+          {archiveTracks.map((track) => (
+            <article className="dimension-archive__track" key={track.id}>
+              <h2 data-ghost-text={pickLocalized(track.label, language)}>{pickLocalized(track.label, language)}</h2>
+              <div className="dimension-archive__tags">
+                {track.words.map((value, wordIndex) => (
+                  <i data-ghost-text={value} key={`${value}-${wordIndex}`}>{value}</i>
+                ))}
               </div>
-              <div className="dimension-panel__face dimension-panel__face--back">
-                <div className="dimension-panel__media dimension-panel__media--back" aria-hidden="true">
-                  {panel.media.slice(0, 3).reverse().map((path, mediaIndex) => (
-                    <MediaSurface
-                      className={`dimension-panel__asset dimension-panel__asset--${
-                        mediaIndex === 0
-                          ? 'primary'
-                          : mediaIndex === 1
-                            ? 'secondary'
-                            : 'tertiary'
-                      }`}
-                      key={`${panel.id}-${path}-back`}
-                      loading="lazy"
-                      path={path}
-                    />
-                  ))}
-                </div>
-                <span data-ghost-text={pickLocalized(panel.label, language)}>{pickLocalized(panel.label, language)}</span>
-                <div className="dimension-panel__words">
-                  {panel.words.map((value, wordIndex) => (
-                    <i data-ghost-text={value} key={`${value}-${wordIndex}`}>{value}</i>
-                  ))}
-                </div>
-              </div>
-            </button>
+            </article>
           ))}
         </div>
       </section>
 
-      <section
-        className={`dimension-drift section-reveal ${driftReveal.revealed ? 'section-reveal--shown' : ''}`}
-        ref={driftReveal.ref}
-      >
+      <section className={`dimension-drift section-reveal ${sceneLayer >= 3 ? 'section-reveal--shown' : ''}`}>
         <div className="section-heading">
           <span data-ghost-text={driftLabel}>{driftLabel}</span>
         </div>
