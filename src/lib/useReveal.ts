@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type RevealOptions = {
   threshold?: number
@@ -11,24 +11,26 @@ export function useReveal<T extends HTMLElement = HTMLElement>({
   rootMargin = '0px 0px -8% 0px',
   once = true,
 }: RevealOptions = {}) {
-  const [node, setNode] = useState<T | null>(null)
+  const ref = useRef<T | null>(null)
   const [revealed, setRevealed] = useState(false)
-  const ref = useCallback((element: T | null) => {
-    setNode(element)
-  }, [])
 
   useEffect(() => {
+    const node = ref.current
     if (!node) return
 
     if (typeof IntersectionObserver === 'undefined') {
-      const frame = window.requestAnimationFrame(() => setRevealed(true))
-      return () => window.cancelAnimationFrame(frame)
+      setRevealed(true)
+      return
     }
 
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
     if (prefersReduced) {
-      const frame = window.requestAnimationFrame(() => setRevealed(true))
-      return () => window.cancelAnimationFrame(frame)
+      setRevealed(true)
+      return
     }
 
     const observer = new IntersectionObserver(
@@ -47,7 +49,7 @@ export function useReveal<T extends HTMLElement = HTMLElement>({
 
     observer.observe(node)
     return () => observer.disconnect()
-  }, [node, once, rootMargin, threshold])
+  }, [threshold, rootMargin, once])
 
   return { ref, revealed }
 }

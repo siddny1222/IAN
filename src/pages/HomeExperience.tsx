@@ -123,7 +123,6 @@ export default function HomeExperience() {
   const homeSignal = pickLocalized(interfaceCopy.homeSignal, language)
   const homeWhisperParts = fragmentText(pickLocalized(interfaceCopy.homeWhisper, language))
   const axesLabel = pickLocalized(interfaceCopy.axesLabel, language)
-  const exploreStartLabel = pickLocalized(interfaceCopy.exploreStart, language)
   const curtainSources = buildMediaQueue(curtainLoadingSources, performanceProfile, {
     includeHighCost: performanceProfile.allowAmbientVideo,
     limit: performanceProfile.allowAmbientVideo ? 10 : 6,
@@ -280,13 +279,6 @@ export default function HomeExperience() {
               <span data-ghost-text={part} key={`${part}-${index}`}>{part}</span>
             ))}
           </p>
-          <button
-            className="home-stage__start xp-button"
-            onClick={() => launchScene(visibleDimensions[0])}
-            type="button"
-          >
-            {exploreStartLabel}
-          </button>
         </div>
 
         <div className="home-stage__axes">

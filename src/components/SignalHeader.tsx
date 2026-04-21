@@ -40,7 +40,6 @@ export default function SignalHeader({ activeDimension }: SignalHeaderProps) {
         <div className="signal-header__locale" aria-label={localeLabel}>
           {locales.map((entry) => (
             <button
-              aria-pressed={entry === language}
               className={entry === language ? 'is-active' : ''}
               data-ghost-text={entry}
               key={entry}
@@ -71,7 +70,6 @@ export default function SignalHeader({ activeDimension }: SignalHeaderProps) {
 
           return (
             <Link
-              aria-current={activeDimension?.slug === dimension.slug ? 'page' : undefined}
               className={activeDimension?.slug === dimension.slug ? 'is-active' : ''}
               data-ghost-text={dimensionTitle}
               key={dimension.slug}
