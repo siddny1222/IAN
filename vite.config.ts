@@ -19,6 +19,10 @@ export default defineConfig(({ mode }) => {
               return 'react-vendor'
             }
 
+            if (id.includes('node_modules/gsap')) {
+              return 'gsap-vendor'
+            }
+
             if (id.includes('/src/pages/')) {
               return undefined
             }

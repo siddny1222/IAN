@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import AdaptiveMedia from '../components/AdaptiveMedia'
+import FluidText from '../components/FluidText'
 import SceneCard from '../components/SceneCard'
-import SplitFogText from '../components/SplitFogText'
 import { usePerformanceProfile } from '../context/usePerformanceProfile'
 import { useLocale } from '../context/useLocale'
 import { scheduleMediaWarmup } from '../lib/mediaLoader'
 import { buildMediaQueue } from '../lib/performance'
 import { primeHomeExperienceRoute } from '../lib/routeModules'
 import { runSoftMotion } from '../lib/softMotion'
+import { gsap, ScrollTrigger } from '../lib/gsapInit'
 import {
   fragmentText,
   getDimensionBySlug,
@@ -19,14 +20,7 @@ import {
 } from '../data/scenes'
 
 const sovietGlitchWords = [
-  'СИГНАЛ',
-  'ЭФИР',
-  'ПОМЕХИ',
-  'ЧАСТОТА',
-  'РАЙОН-07',
-  'БЛОК',
-  'ЗИМА',
-  'АРХИВ',
+  'СИГНАЛ', 'ЭФИР', 'ПОМЕХИ', 'ЧАСТОТА', 'РАЙОН-07', 'БЛОК', 'ЗИМА', 'АРХИВ',
 ] as const
 
 function MediaSurface({
@@ -40,8 +34,7 @@ function MediaSurface({
   path: string
   staticFallback?: string
 }) {
-  const mediaClass = /icon|logo|sticker|bliss/i.test(path)
-    || /bsod/i.test(path)
+  const mediaClass = /icon|logo|sticker|bliss/i.test(path) || /bsod/i.test(path)
     ? `${className} is-contained`
     : className
 
@@ -72,31 +65,24 @@ export default function ThemeScene() {
     window.scrollTo({ top: 0, behavior: 'auto' })
   }, [slug])
 
-  useEffect(() => {
-    void primeHomeExperienceRoute()
-  }, [])
+  useEffect(() => { void primeHomeExperienceRoute() }, [])
 
   useEffect(() => {
     let gridTimer = 0
     let fullTimer = 0
-
     gridTimer = window.setTimeout(() => {
       setSceneLayer(2)
-      fullTimer = window.setTimeout(() => {
-        setSceneLayer(3)
-      }, 76)
+      fullTimer = window.setTimeout(() => setSceneLayer(3), 76)
     }, 24)
-
     return () => {
       window.clearTimeout(gridTimer)
       window.clearTimeout(fullTimer)
     }
   }, [slug])
 
+  // Entry animations
   useEffect(() => {
-    if (!scene || !motionEnabled) {
-      return
-    }
+    if (!scene || !motionEnabled) return
     return runSoftMotion([
       {
         selector: '.dimension-hero__copy',
@@ -122,6 +108,61 @@ export default function ThemeScene() {
         staggerMs: 50,
       },
     ])
+  }, [motionEnabled, scene, slug])
+
+  // ScrollTrigger reveals for section content
+  useEffect(() => {
+    if (!scene || !motionEnabled) return
+
+    const sections = document.querySelectorAll<HTMLElement>('.dimension-textbox, .dimension-drift__routes')
+    const cleanupFns: Array<() => void> = []
+
+    sections.forEach((el) => {
+      const children = Array.from(el.children) as HTMLElement[]
+      if (!children.length) return
+
+      gsap.set(children, { opacity: 0, y: 22, filter: 'blur(5px)' })
+
+      const trigger = ScrollTrigger.create({
+        trigger: el,
+        start: 'top 88%',
+        onEnter: () => {
+          gsap.to(children, {
+            opacity: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: 0.56,
+            ease: 'power3.out',
+            stagger: 0.06,
+            clearProps: 'filter',
+          })
+        },
+      })
+
+      cleanupFns.push(() => trigger.kill())
+    })
+
+    return () => { cleanupFns.forEach((fn) => fn()) }
+  }, [motionEnabled, scene, slug])
+
+  // Parallax on backdrop still
+  useEffect(() => {
+    if (!scene || !motionEnabled) return
+
+    const still = document.querySelector<HTMLElement>('.dimension-page__still')
+    if (!still) return
+
+    const trigger = ScrollTrigger.create({
+      trigger: '.dimension-page',
+      start: 'top top',
+      end: 'bottom top',
+      scrub: true,
+      onUpdate: (self) => {
+        gsap.set(still, { y: self.progress * 80 })
+      },
+    })
+
+    return () => { trigger.kill() }
   }, [motionEnabled, scene, slug])
 
   const crossLinks = (scene?.crossLinks ?? [])
@@ -155,12 +196,11 @@ export default function ThemeScene() {
         array.findIndex((candidate) => candidate.path === entry.path) === index,
     )
     .slice(0, 3)
-  const ctaLabel = pickLocalized(interfaceCopy.enter, language)
-  useEffect(() => {
-    if (!scene) {
-      return
-    }
 
+  const ctaLabel = pickLocalized(interfaceCopy.enter, language)
+
+  useEffect(() => {
+    if (!scene) return
     const linkedSources = scene.crossLinks
       .map((entry) => getDimensionBySlug(entry))
       .filter((entry): entry is NonNullable<typeof entry> => entry !== undefined)
@@ -183,16 +223,13 @@ export default function ThemeScene() {
         ].filter((path): path is string => Boolean(path)),
       ),
     )
-
     return scheduleMediaWarmup(buildMediaQueue(warmSources, performanceProfile), {
       delay: scene.tone === 'error' ? 220 : 140,
       timeout: 1600,
     })
   }, [performanceProfile, scene])
 
-  if (!scene) {
-    return <Navigate replace to="/" />
-  }
+  if (!scene) return <Navigate replace to="/" />
 
   return (
     <div
@@ -214,52 +251,23 @@ export default function ThemeScene() {
       {scene.tone === 'soviet' && motionEnabled ? (
         <div className="dimension-page__cyrillic-field" aria-hidden="true">
           {sovietGlitchWords.map((word) => (
-            <span data-text={word} key={word}>
-              {word}
-            </span>
+            <span data-text={word} key={word}>{word}</span>
           ))}
         </div>
       ) : null}
 
       {scene.tone === 'error' ? (
         <div className="error-shrine-field" aria-hidden="true">
-          <AdaptiveMedia
-            className="error-shrine-field__layer error-shrine-field__layer--a"
-            path="/media/uploaded/error-shrine-connected.jpg"
-          />
-          <AdaptiveMedia
-            className="error-shrine-field__layer error-shrine-field__layer--b"
-            path="/media/uploaded/error-shrine-green-face.jpg"
-          />
-          <AdaptiveMedia
-            className="error-shrine-field__layer error-shrine-field__layer--c"
-            path="/media/uploaded/error-shrine-shadow-monitor.jpg"
-          />
-          <AdaptiveMedia
-            className="error-shrine-field__layer error-shrine-field__layer--d"
-            path="/media/uploaded/error-shrine-signal-hand.jpg"
-          />
-          <AdaptiveMedia
-            className="error-shrine-field__layer error-shrine-field__layer--e"
-            path="/media/uploaded/error-shrine-blue-tv.jpg"
-          />
+          <AdaptiveMedia className="error-shrine-field__layer error-shrine-field__layer--a" path="/media/uploaded/error-shrine-connected.jpg" />
+          <AdaptiveMedia className="error-shrine-field__layer error-shrine-field__layer--b" path="/media/uploaded/error-shrine-green-face.jpg" />
+          <AdaptiveMedia className="error-shrine-field__layer error-shrine-field__layer--c" path="/media/uploaded/error-shrine-shadow-monitor.jpg" />
+          <AdaptiveMedia className="error-shrine-field__layer error-shrine-field__layer--d" path="/media/uploaded/error-shrine-signal-hand.jpg" />
+          <AdaptiveMedia className="error-shrine-field__layer error-shrine-field__layer--e" path="/media/uploaded/error-shrine-blue-tv.jpg" />
           {motionEnabled ? (
             <>
-              <AdaptiveMedia
-                className="error-shrine-field__noise"
-                path="/media/111.gif"
-                staticFallback="/media/ian-glitch-still.png"
-              />
-              <AdaptiveMedia
-                className="error-shrine-field__noise error-shrine-field__noise--alt"
-                path="/media/222.gif"
-                staticFallback="/media/ian-glitch-still.png"
-              />
-              <AdaptiveMedia
-                className="error-shrine-field__glitch"
-                path="/media/ian-glitch-installation.gif"
-                staticFallback="/media/ian-glitch-still.png"
-              />
+              <AdaptiveMedia className="error-shrine-field__noise" path="/media/111.gif" staticFallback="/media/ian-glitch-still.png" />
+              <AdaptiveMedia className="error-shrine-field__noise error-shrine-field__noise--alt" path="/media/222.gif" staticFallback="/media/ian-glitch-still.png" />
+              <AdaptiveMedia className="error-shrine-field__glitch" path="/media/ian-glitch-installation.gif" staticFallback="/media/ian-glitch-still.png" />
             </>
           ) : null}
           <span className="error-shrine-field__core"></span>
@@ -279,7 +287,7 @@ export default function ThemeScene() {
             {sceneCoordinate}
           </span>
           <h1>
-            <SplitFogText text={sceneTitle} />
+            <FluidText text={sceneTitle} influence={108} />
           </h1>
           <div className="dimension-hero__signal-stack">
             <p className="is-active">
@@ -330,9 +338,7 @@ export default function ThemeScene() {
         </div>
       </section>
 
-      <section
-        className="dimension-grid section-reveal section-reveal--shown"
-      >
+      <section className="dimension-grid section-reveal section-reveal--shown">
         <div className="dimension-textboxes" aria-label={driftLabel}>
           <article className="dimension-textbox">
             <span data-ghost-text={styleLabel}>{styleLabel}</span>
@@ -369,9 +375,7 @@ export default function ThemeScene() {
         </div>
       </section>
 
-      <section
-        className="dimension-drift section-reveal section-reveal--shown"
-      >
+      <section className="dimension-drift section-reveal section-reveal--shown">
         <div className="section-heading">
           <span data-ghost-text={driftLabel}>{driftLabel}</span>
         </div>

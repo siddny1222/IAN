@@ -1,16 +1,17 @@
 import type { CSSProperties } from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AdaptiveMedia from '../components/AdaptiveMedia'
 import BootCurtain from '../components/BootCurtain'
+import FluidText from '../components/FluidText'
 import SceneCard from '../components/SceneCard'
-import SplitFogText from '../components/SplitFogText'
 import { usePerformanceProfile } from '../context/usePerformanceProfile'
 import { useLocale } from '../context/useLocale'
 import { primeMedia, scheduleMediaWarmup } from '../lib/mediaLoader'
 import { buildMediaQueue } from '../lib/performance'
 import { primeThemeSceneRoute } from '../lib/routeModules'
 import { runSoftMotion } from '../lib/softMotion'
+import { gsap } from '../lib/gsapInit'
 import {
   assetArchiveById,
   dimensions,
@@ -117,6 +118,8 @@ export default function HomeExperience() {
   )
   const [launchingScene, setLaunchingScene] = useState<Dimension | null>(null)
   const [activeSlice, setActiveSlice] = useState(0)
+  const prevSliceRef = useRef(0)
+  const slicesTrackRef = useRef<HTMLDivElement>(null)
   const showExperience = curtainPhase !== 'closed'
 
   const featuredArchive = homeArchiveCollageIds
@@ -133,35 +136,23 @@ export default function HomeExperience() {
 
   useEffect(() => {
     document.body.classList.toggle('curtain-active', curtainPhase !== 'open')
-
-    return () => {
-      document.body.classList.remove('curtain-active')
-    }
+    return () => { document.body.classList.remove('curtain-active') }
   }, [curtainPhase])
 
   useEffect(() => {
     if (!showExperience) {
-      const resetTimer = window.setTimeout(() => {
-        setHomeLayer(0)
-      }, 0)
-
-      return () => {
-        window.clearTimeout(resetTimer)
-      }
+      const t = window.setTimeout(() => setHomeLayer(0), 0)
+      return () => window.clearTimeout(t)
     }
 
     let stageTimer = 0
     let archiveTimer = 0
     let slicesTimer = 0
 
-    stageTimer = window.setTimeout(() => {
-      setHomeLayer(1)
-    }, 0)
+    stageTimer = window.setTimeout(() => setHomeLayer(1), 0)
     archiveTimer = window.setTimeout(() => {
       setHomeLayer(2)
-      slicesTimer = window.setTimeout(() => {
-        setHomeLayer(3)
-      }, 140)
+      slicesTimer = window.setTimeout(() => setHomeLayer(3), 140)
     }, curtainPhase === 'opening' ? 420 : 120)
 
     return () => {
@@ -172,9 +163,7 @@ export default function HomeExperience() {
   }, [curtainPhase, showExperience])
 
   useEffect(() => {
-    if (!showExperience || !performanceProfile.allowHeavyMotion || performanceProfile.prefersReducedMotion) {
-      return
-    }
+    if (!showExperience || !performanceProfile.allowHeavyMotion || performanceProfile.prefersReducedMotion) return
     return runSoftMotion([
       {
         selector: '.home-stage__intro',
@@ -193,41 +182,62 @@ export default function HomeExperience() {
         staggerMs: 45,
       },
     ])
-  }, [
-    performanceProfile.allowHeavyMotion,
-    performanceProfile.prefersReducedMotion,
-    showExperience,
-  ])
+  }, [performanceProfile.allowHeavyMotion, performanceProfile.prefersReducedMotion, showExperience])
 
   useEffect(() => {
-    if (!showExperience) {
-      return
-    }
-
+    if (!showExperience) return
     void primeThemeSceneRoute()
-
     return scheduleMediaWarmup(buildMediaQueue(deferredHomeLoadingSources, performanceProfile), {
       delay: curtainPhase === 'opening' ? 520 : 180,
       timeout: 1800,
     })
   }, [curtainPhase, performanceProfile, showExperience])
 
+  // Autoplay carousel
   useEffect(() => {
-    if (!showExperience) {
-      return
-    }
-
+    if (!showExperience) return
     const autoplay = window.setInterval(() => {
       setActiveSlice((current) => (current + 1) % visibleDimensions.length)
     }, 3600)
-
     return () => window.clearInterval(autoplay)
   }, [showExperience])
 
-  const launchScene = (scene: Dimension) => {
-    if (launchingScene) {
-      return
+  // GSAP carousel transition
+  useEffect(() => {
+    if (!showExperience || !performanceProfile.allowHeavyMotion) return
+
+    const track = slicesTrackRef.current
+    if (!track) return
+
+    const incoming = track.querySelectorAll<HTMLElement>(
+      `.dimension-slice:nth-child(${activeSlice + 1}) .dimension-slice__copy > *`,
+    )
+    const prev = prevSliceRef.current
+
+    if (prev === activeSlice) return
+    prevSliceRef.current = activeSlice
+
+    // Animate text chars in the incoming slide
+    if (incoming.length) {
+      gsap.fromTo(
+        Array.from(incoming),
+        { opacity: 0, y: 18, filter: 'blur(6px)' },
+        {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.64,
+          ease: 'power3.out',
+          stagger: 0.07,
+          delay: 0.28,
+          clearProps: 'filter',
+        },
+      )
     }
+  }, [activeSlice, showExperience, performanceProfile.allowHeavyMotion])
+
+  const launchScene = (scene: Dimension) => {
+    if (launchingScene) return
 
     const resolvedScene = hiddenDimension
       && scene.slug !== hiddenDimension.slug
@@ -246,9 +256,7 @@ export default function HomeExperience() {
     ], performanceProfile, { includeHighCost: true, limit: 5 }))
     void Promise.race([
       Promise.all([routeWarmup, warmup]),
-      new Promise((resolve) => {
-        window.setTimeout(resolve, 380)
-      }),
+      new Promise((resolve) => { window.setTimeout(resolve, 380) }),
     ]).then(() => {
       navigate(resolvedScene.path, { state: { fromHub: true } })
     }).catch(() => {
@@ -257,15 +265,10 @@ export default function HomeExperience() {
   }
 
   const openCurtain = () => {
-    if (curtainPhase !== 'closed') {
-      return
-    }
-
+    if (curtainPhase !== 'closed') return
     sessionStorage.setItem(CURTAIN_SESSION_KEY, '1')
     setCurtainPhase('opening')
-    window.setTimeout(() => {
-      setCurtainPhase('open')
-    }, 1120)
+    window.setTimeout(() => setCurtainPhase('open'), 1120)
   }
 
   const archiveLabel = pickLocalized(interfaceCopy.archiveLabel, language)
@@ -310,7 +313,7 @@ export default function HomeExperience() {
             {homeSignal}
           </p>
           <h1>
-            <SplitFogText text="IAN" />
+            <FluidText text="IAN" influence={140} fog={false} />
           </h1>
           <p className="home-stage__whisper">
             {homeWhisperParts.map((part, index) => (
@@ -344,18 +347,29 @@ export default function HomeExperience() {
               }
             />
           ))}
-
         </div>
       </section>
 
       <section className="home-slices">
         <div className="home-slices__viewport">
-          <div className="home-slices__track" style={{ transform: `translateX(-${activeSlice * 100}%)` }}>
+          <div
+            className="home-slices__track"
+            ref={slicesTrackRef}
+            style={{ transform: `translateX(-${activeSlice * 100}%)` }}
+          >
             {visibleDimensions.map((scene) => (
               <article className={`dimension-slice dimension-slice--${scene.tone}`} key={scene.slug}>
                 <div className="dimension-slice__media">
-                  <AdaptiveMedia className="" loading="lazy" path={scene.media.still} />
-                  <AdaptiveMedia className="" loading="lazy" path={scene.media.texture} />
+                  <AdaptiveMedia
+                    className="dimension-slice__still"
+                    loading="lazy"
+                    path={scene.media.still}
+                  />
+                  <AdaptiveMedia
+                    className="dimension-slice__texture"
+                    loading="lazy"
+                    path={scene.media.texture}
+                  />
                 </div>
                 <div className="dimension-slice__copy">
                   <span data-ghost-text={pickLocalized(scene.microLabel, language)}>{pickLocalized(scene.microLabel, language)}</span>
@@ -373,6 +387,16 @@ export default function HomeExperience() {
               </article>
             ))}
           </div>
+
+          {/* Progress bar */}
+          <div
+            className="home-slices__progress"
+            aria-hidden="true"
+            style={{
+              '--slice-progress': `${((activeSlice + 1) / visibleDimensions.length) * 100}%`,
+            } as CSSProperties}
+          />
+
           <div className="home-slices__dots" aria-label="scene carousel">
             {visibleDimensions.map((scene, index) => (
               <button
@@ -424,8 +448,6 @@ export default function HomeExperience() {
           })}
         </div>
       </section>
-
-      
 
       {launchingScene ? (
         <div className="launch-overlay" aria-hidden="true">
