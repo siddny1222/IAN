@@ -64,8 +64,6 @@ export type ArchiveAsset = {
   source: string
 }
 
-export type PanelKind = 'visual' | 'interaction' | 'internet' | 'physical'
-
 export const languages: Language[] = ['zh', 'en', 'de']
 
 export const homePalette: [string, string, string, string] = [
@@ -96,11 +94,6 @@ export const interfaceCopy = {
     en: 'locale',
     de: 'Sprache',
   },
-  hiddenRoute: {
-    zh: '裂缝入口',
-    en: 'fault seam',
-    de: 'Riss-Eingang',
-  },
   archiveLabel: {
     zh: '素材残片',
     en: 'material shards',
@@ -116,35 +109,25 @@ export const interfaceCopy = {
     en: 'drift routes',
     de: 'Drift-Routen',
   },
+  styleLabel: {
+    zh: '风格剖面',
+    en: 'style profile',
+    de: 'Stilprofil',
+  },
+  motifLabel: {
+    zh: '核心母题',
+    en: 'core motif',
+    de: 'Kernmotiv',
+  },
   homeSignal: {
-    zh: '影像 / 漂移 / 微光',
-    en: 'moving image / drift / glimmer',
-    de: 'Bild / Drift / Schimmer',
+    zh: '梦境成像 / 缓慢漂移 / 信号余晖',
+    en: 'dream imaging / slow drift / signal afterglow',
+    de: 'Traumbild / Langsame Drift / Signal-Nachglühen',
   },
   homeWhisper: {
-    zh: '停留 / 漫游 / 进入',
-    en: 'linger / wander / enter',
-    de: 'Verweilen / Treiben / Eintreten',
-  },
-  visualLabel: {
-    zh: '视觉母题',
-    en: 'visual motifs',
-    de: 'Visuelle Motive',
-  },
-  interactionLabel: {
-    zh: '交互母题',
-    en: 'interaction motifs',
-    de: 'Interaktionsmotive',
-  },
-  internetLabel: {
-    zh: '互联网遗物',
-    en: 'internet relics',
-    de: 'Internet-Relikte',
-  },
-  physicalLabel: {
-    zh: '现实遗物',
-    en: 'physical relics',
-    de: 'Materielle Relikte',
+    zh: '停留 / 侧听 / 下潜',
+    en: 'linger / listen / descend',
+    de: 'Verweilen / Lauschen / Abtauchen',
   },
   ambientLabel: {
     zh: '环境残响',
@@ -162,6 +145,105 @@ export const interfaceCopy = {
     de: 'Wischen / Scrollen / Klicken / Öffnen',
   },
 } satisfies Record<string, LocalizedText>
+
+export const sceneEssenceBySlug: Record<DimensionSlug, { style: LocalizedText; motif: LocalizedText }> = {
+  dreamfield: {
+    style: {
+      zh: '奶油高光与低像素晴空叠加，像桌面壁纸被放大到可步入。',
+      en: 'Cream highlights and low-pixel skies fuse into a walkable desktop wallpaper.',
+      de: 'Creme-Highlights und Low-Pixel-Himmel verschmelzen zu einer begehbaren Desktop-Tapete.',
+    },
+    motif: {
+      zh: '被美化的记忆：塑料质感白昼如何包裹童年互联网想象。',
+      en: 'Beautified memory: plastic daylight wrapping childhood internet imagination.',
+      de: 'Verschönerte Erinnerung: Kunststoff-Tageslicht umhüllt kindliche Netzfantasie.',
+    },
+  },
+  'browser-shrine': {
+    style: {
+      zh: '窗口、像素与装置并置，形成索引式祭坛视觉。',
+      en: 'Windows, pixels, and hardware align into an index-like altar aesthetic.',
+      de: 'Fenster, Pixel und Hardware formen eine indexartige Altar-Ästhetik.',
+    },
+    motif: {
+      zh: '链接作为仪式：点击、检索与收藏被重新神圣化。',
+      en: 'Links as ritual: clicking, searching, and bookmarking become sacred again.',
+      de: 'Links als Ritual: Klicken, Suchen und Speichern werden wieder sakral.',
+    },
+  },
+  'silent-bedroom': {
+    style: {
+      zh: '低照度卧室与屏幕余光交织，呈现克制且潮湿的静态感。',
+      en: 'Low-light bedroom haze and monitor glow create restrained humid stillness.',
+      de: 'Schwaches Schlafzimmerlicht und Monitorglühen erzeugen feuchte, ruhige Starre.',
+    },
+    motif: {
+      zh: '私人空间的回声：孤独、待机与深夜浏览的残留温度。',
+      en: 'Echo of private space: residual warmth of solitude and late-night browsing.',
+      de: 'Echo des Privatraums: Restwärme von Einsamkeit und nächtlichem Surfen.',
+    },
+  },
+  poolcore: {
+    style: {
+      zh: '青蓝瓷砖、潮湿反光和空阔回声构成液态空间。',
+      en: 'Cyan tiles, wet reflections, and hollow echoes form a liquid field.',
+      de: 'Zyanfliesen, nasse Reflexe und hohle Echos formen ein flüssiges Feld.',
+    },
+    motif: {
+      zh: '过度清洁的空无：宁静与不安同时上升。',
+      en: 'Over-clean emptiness: calm and unease rise together.',
+      de: 'Überreine Leere: Ruhe und Unbehagen steigen gleichzeitig.',
+    },
+  },
+  'dead-mall': {
+    style: {
+      zh: '褪色商业灯箱与空旷中庭叠影，营造延迟时代感。',
+      en: 'Faded lightboxes and vacant atriums create delayed-era ambience.',
+      de: 'Verblasste Leuchtkästen und leere Atrien erzeugen eine verzögerte Zeitstimmung.',
+    },
+    motif: {
+      zh: '消费废墟：繁荣叙事崩塌后仍在循环的空间脚本。',
+      en: 'Consumer ruins: spatial scripts still looping after prosperity collapsed.',
+      de: 'Konsumruinen: Raumskripte laufen weiter, obwohl der Wohlstand kollabierte.',
+    },
+  },
+  backrooms: {
+    style: {
+      zh: '荧光泛黄与重复走廊压缩透视，制造持续迷失感。',
+      en: 'Yellow fluorescent corridors compress perspective into disorientation.',
+      de: 'Gelbe Neonflure verdichten Perspektive zu andauernder Desorientierung.',
+    },
+    motif: {
+      zh: '出口幻觉：每次转角都像接近答案却再次偏航。',
+      en: 'Exit illusion: each turn feels closer to an answer, then veers away.',
+      de: 'Ausgangsillusion: Jede Ecke wirkt näher an der Antwort und führt doch weg.',
+    },
+  },
+  'post-soviet-signal': {
+    style: {
+      zh: '冷灰混凝土与广播噪点叠加，形成粗粝信号景观。',
+      en: 'Cold concrete and broadcast noise layer into a rough signal landscape.',
+      de: 'Kalter Beton und Rundfunkrauschen schichten sich zur rauen Signal-Landschaft.',
+    },
+    motif: {
+      zh: '制度残响：公共记忆在失真频道中反复回放。',
+      en: 'Institutional afterecho: public memory replayed on distorted channels.',
+      de: 'Institutionelles Nachhallen: öffentliches Gedächtnis auf verzerrten Kanälen.',
+    },
+  },
+  'error-shrine': {
+    style: {
+      zh: '高对比故障色块与断帧图层交替闪现，形成失稳祭坛。',
+      en: 'High-contrast glitch blocks and split frames flash into an unstable shrine.',
+      de: 'Kontrastreiche Glitch-Blöcke und Rissframes blitzen zu einem instabilen Schrein.',
+    },
+    motif: {
+      zh: '崩坏崇拜：系统报错被转译成一种超现实敬拜。',
+      en: 'Collapse worship: system errors translated into surreal devotion.',
+      de: 'Kollapsverehrung: Systemfehler werden zur surrealen Andacht übersetzt.',
+    },
+  },
+}
 
 export const homeAxes: LocalizedList = {
   zh: ['温度轴', '液态轴', '制度轴', '失真轴'],
@@ -889,161 +971,6 @@ export const homeArchiveCollageIds = [
   'lakeforest-construction',
   'glitch-installation',
 ] as const
-
-export const dimensionPanelMedia: Record<string, Record<PanelKind, string[]>> = {
-  dreamfield: {
-    visual: [
-      '/media/IMG_2433.jpg',
-      '/media/found/xp-bliss.svg',
-      '/media/ian-main-hero-poster.png',
-    ],
-    interaction: [
-      '/media/clouds-timelapse.webm',
-      '/media/found/computer-monitor-simulated.jpg',
-      '/media/ian-main-hero-poster.png',
-    ],
-    internet: [
-      '/media/found/msn-messenger-icon.png',
-      '/media/found/xp-explorer-icon.png',
-      '/media/found/xp-logo.svg',
-    ],
-    physical: [
-      '/media/found/pentium-windows98-sticker.jpg',
-      '/media/found/xp-logo.svg',
-      '/media/found/computer-monitor-simulated.jpg',
-    ],
-  },
-  'browser-shrine': {
-    visual: [
-      '/media/found/browser-mosaic.png',
-      '/media/found/vintage-computer-arrangement.jpg',
-      '/media/found/dots-glitch.gif',
-    ],
-    interaction: [
-      '/media/found/installing-windows-95.jpg',
-      '/media/found/vintage-computer-arrangement.jpg',
-      '/media/IMG_2435.jpg',
-    ],
-    internet: [
-      '/media/found/msn-messenger-icon.png',
-      '/media/found/xp-explorer-icon.png',
-      '/media/found/xp-logo.svg',
-    ],
-    physical: [
-      '/media/found/pentium-windows98-sticker.jpg',
-      '/media/found/microsoft-keyboard.jpg',
-      '/media/textures/Plastic017A_1K-JPG_Color.jpg',
-    ],
-  },
-  'silent-bedroom': {
-    visual: [
-      '/media/IMG_2435.jpg',
-      '/media/ian-main-hero-poster.png',
-      '/media/clouds-timelapse.webm',
-    ],
-    interaction: [
-      '/media/found/basement-desk.jpg',
-      '/media/found/old-tv.jpg',
-      '/media/ian-noise-veil.gif',
-    ],
-    internet: [
-      '/media/found/computer-monitor-simulated.jpg',
-      '/media/222.gif',
-      '/media/ian-noise-veil.gif',
-    ],
-    physical: [
-      '/media/found/microsoft-keyboard.jpg',
-      '/media/IMG_2428.jpg',
-      '/media/found/old-tv.jpg',
-    ],
-  },
-  poolcore: {
-    visual: ['/media/IMG_2424.jpg', '/media/found/poolcore-interior.jpg', '/media/IMG_2426.jpg'],
-    interaction: ['/media/111.gif', '/media/IMG_2426.jpg', '/media/clouds-timelapse.webm'],
-    internet: ['/media/IMG_2425.jpg', '/media/111.gif', '/media/clouds-timelapse.webm'],
-    physical: ['/media/IMG_2423.jpg', '/media/textures/Tiles096_1K-JPG_Color.jpg', '/media/IMG_2424.jpg'],
-  },
-  'dead-mall': {
-    visual: [
-      '/media/found/mall-atrium.jpg',
-      '/media/found/abandoned-mall.jpg',
-      '/media/found/dead-mall-interior.jpg',
-    ],
-    interaction: [
-      '/media/IMG_2430.jpg',
-      '/media/found/lakeforest-construction-1978.jpg',
-      '/media/found/dots-glitch.gif',
-    ],
-    internet: [
-      '/media/found/lakeforest-construction-1978.jpg',
-      '/media/found/browser-mosaic.png',
-      '/media/found/dots-glitch.gif',
-    ],
-    physical: [
-      '/media/IMG_2430.jpg',
-      '/media/found/abandoned-mall.jpg',
-      '/media/found/mall-atrium.jpg',
-    ],
-  },
-  backrooms: {
-    visual: [
-      '/media/found/fluorescent-panel.jpg',
-      '/media/IMG_2429.jpg',
-      '/media/IMG_2427.jpg',
-    ],
-    interaction: [
-      '/media/IMG_2427.jpg',
-      '/media/ian-noise-veil.gif',
-      '/media/111.gif',
-    ],
-    internet: [
-      '/media/found/windows-xp-bsod.png',
-      '/media/222.gif',
-      '/media/found/dots-glitch.gif',
-    ],
-    physical: [
-      '/media/IMG_2428.jpg',
-      '/media/textures/Concrete013_1K-JPG_Color.jpg',
-      '/media/found/fluorescent-panel.jpg',
-    ],
-  },
-  'post-soviet-signal': {
-    visual: [
-      '/media/found/post-soviet-apartments.jpg',
-      '/media/found/moscow-bus-stop.jpg',
-      '/media/textures/Concrete013_1K-JPG_Color.jpg',
-    ],
-    interaction: ['/media/found/soviet-tv-minsk.jpg', '/media/222.gif', '/media/111.gif'],
-    internet: ['/media/ian-glitch-still.png', '/media/ian-noise-veil.gif', '/media/IMG_2428.jpg'],
-    physical: [
-      '/media/found/soviet-tv-minsk.jpg',
-      '/media/textures/Concrete013_1K-JPG_Color.jpg',
-      '/media/found/moscow-bus-stop.jpg',
-    ],
-  },
-  'error-shrine': {
-    visual: [
-      '/media/uploaded/error-shrine-shadow-monitor.jpg',
-      '/media/uploaded/error-shrine-signal-hand.jpg',
-      '/media/uploaded/error-shrine-green-face.jpg',
-    ],
-    interaction: [
-      '/media/uploaded/error-shrine-blue-tv.jpg',
-      '/media/uploaded/error-shrine-connected.jpg',
-      '/media/ian-glitch-installation.gif',
-    ],
-    internet: [
-      '/media/uploaded/error-shrine-connected.jpg',
-      '/media/uploaded/error-shrine-green-face.jpg',
-      '/media/uploaded/error-shrine-signal-hand.jpg',
-    ],
-    physical: [
-      '/media/uploaded/error-shrine-blue-tv.jpg',
-      '/media/uploaded/error-shrine-shadow-monitor.jpg',
-      '/media/111.gif',
-    ],
-  },
-}
 
 export function getDimensionBySlug(slug?: string) {
   if (!slug) {
