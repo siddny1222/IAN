@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import AdaptiveMedia from '../components/AdaptiveMedia'
 import SceneCard from '../components/SceneCard'
+import SplitFogText from '../components/SplitFogText'
 import { usePerformanceProfile } from '../context/usePerformanceProfile'
 import { useLocale } from '../context/useLocale'
 import { scheduleMediaWarmup } from '../lib/mediaLoader'
@@ -275,9 +276,7 @@ export default function ThemeScene() {
             {sceneCoordinate}
           </span>
           <h1>
-            {fragmentText(sceneTitle).map((part, index) => (
-              <span data-ghost-text={part} key={`${part}-${index}`}>{part}</span>
-            ))}
+            <SplitFogText text={sceneTitle} />
           </h1>
           <div className="dimension-hero__signal-stack">
             <p className="is-active">

@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import AdaptiveMedia from './AdaptiveMedia'
+import SplitFogText from './SplitFogText'
 import { usePerformanceProfile } from '../context/usePerformanceProfile'
 import { withBase } from '../lib/performance'
 import {
@@ -287,9 +288,7 @@ export default function BootCurtain({
           </div>
 
           <h2>
-            {['I', 'A', 'N'].map((letter) => (
-              <span data-ghost-text={letter} key={letter}>{letter}</span>
-            ))}
+            <SplitFogText text="IAN" />
           </h2>
 
           <div className="boot-curtain__whispers">

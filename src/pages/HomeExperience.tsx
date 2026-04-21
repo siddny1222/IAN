@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import AdaptiveMedia from '../components/AdaptiveMedia'
 import BootCurtain from '../components/BootCurtain'
 import SceneCard from '../components/SceneCard'
+import SplitFogText from '../components/SplitFogText'
 import { usePerformanceProfile } from '../context/usePerformanceProfile'
 import { useLocale } from '../context/useLocale'
 import { primeMedia, scheduleMediaWarmup } from '../lib/mediaLoader'
@@ -309,20 +310,7 @@ export default function HomeExperience() {
             {homeSignal}
           </p>
           <h1>
-            {['I', 'A', 'N'].map((letter) => (
-              <span
-                className="fluid-letter"
-                data-ghost-text={letter}
-                key={letter}
-                onMouseMove={(event) => {
-                  const rect = event.currentTarget.getBoundingClientRect()
-                  event.currentTarget.style.setProperty('--pointer-x', `${event.clientX - rect.left}px`)
-                  event.currentTarget.style.setProperty('--pointer-y', `${event.clientY - rect.top}px`)
-                }}
-              >
-                {letter}
-              </span>
-            ))}
+            <SplitFogText text="IAN" />
           </h1>
           <p className="home-stage__whisper">
             {homeWhisperParts.map((part, index) => (
