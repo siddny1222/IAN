@@ -11,11 +11,16 @@ export default defineConfig(({ mode }) => {
     build: {
       assetsInlineLimit: 4096,
       target: 'es2020',
+      reportCompressedSize: false,
       rollupOptions: {
         output: {
           manualChunks(id) {
             if (id.includes('react-router-dom') || id.includes('/react-dom/') || id.includes('/react/')) {
               return 'react-vendor'
+            }
+
+            if (id.includes('/src/pages/')) {
+              return undefined
             }
 
             return undefined

@@ -12,6 +12,7 @@ type AdaptiveMediaProps = {
   autoPlay?: boolean
   className: string
   decoding?: 'async' | 'sync' | 'auto'
+  fetchpriority?: 'high' | 'low' | 'auto'
   forceStatic?: boolean
   loading?: 'eager' | 'lazy'
   loop?: boolean
@@ -23,12 +24,20 @@ type AdaptiveMediaProps = {
   staticFallback?: string
 }
 
+function getVideoMimeType(path: string): string | undefined {
+  if (/\.mp4$/i.test(path)) return 'video/mp4'
+  if (/\.webm$/i.test(path)) return 'video/webm'
+  if (/\.mov$/i.test(path)) return 'video/quicktime'
+  return undefined
+}
+
 export default function AdaptiveMedia({
   alt = '',
   ariaHidden = true,
   autoPlay = false,
   className,
   decoding = 'async',
+  fetchpriority,
   forceStatic = false,
   loading = 'eager',
   loop = false,
@@ -56,6 +65,7 @@ export default function AdaptiveMedia({
         aria-hidden={ariaHidden}
         className={className}
         decoding={decoding}
+        fetchPriority={fetchpriority}
         loading={loading}
         src={withBase(fallbackPath)}
       />
@@ -74,7 +84,7 @@ export default function AdaptiveMedia({
         poster={fallbackPath ? withBase(fallbackPath) : undefined}
         preload={preload ?? (loading === 'lazy' || profile.preferStaticMedia ? 'none' : 'metadata')}
       >
-        <source src={withBase(path)} />
+        <source src={withBase(path)} type={getVideoMimeType(path)} />
       </video>
     )
   }
@@ -85,6 +95,7 @@ export default function AdaptiveMedia({
       aria-hidden={ariaHidden}
       className={className}
       decoding={decoding}
+      fetchPriority={fetchpriority}
       loading={loading}
       src={withBase(path)}
     />

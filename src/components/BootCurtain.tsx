@@ -44,10 +44,29 @@ export default function BootCurtain({
     onEnter()
   }, [ready, onEnter])
 
+  const handleEnterRef = useRef(handleEnter)
+  handleEnterRef.current = handleEnter
+
   useEffect(() => {
     if (phase === 'closed') {
       dialogRef.current?.focus()
     }
+  }, [phase])
+
+  useEffect(() => {
+    if (phase === 'open') return
+    const el = dialogRef.current
+    if (!el) return
+
+    const onWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaY) > 18) {
+        event.preventDefault()
+        handleEnterRef.current()
+      }
+    }
+
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
   }, [phase])
 
   useEffect(() => {
@@ -200,24 +219,19 @@ export default function BootCurtain({
           handleEnter()
         }
       }}
-      onWheel={(event) => {
-        if (Math.abs(event.deltaY) > 18) {
-          event.preventDefault()
-          handleEnter()
-        }
-      }}
       role="dialog"
       tabIndex={0}
     >
       <AdaptiveMedia
         autoPlay
         className="boot-curtain__video"
+        fetchpriority="high"
         forceStatic={!performanceProfile.allowAmbientVideo}
         loop
         muted
         path="/media/ian-main-hero.mp4"
         poster="/media/ian-main-hero-poster.png"
-        preload={performanceProfile.allowAmbientVideo ? 'auto' : 'none'}
+        preload={performanceProfile.allowAmbientVideo ? 'metadata' : 'none'}
       />
       {performanceProfile.allowHeavyMotion ? (
         <AdaptiveMedia
