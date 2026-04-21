@@ -298,131 +298,132 @@ export default function HomeExperience() {
         phase={curtainPhase}
       />
 
-      <section className="home-stage">
-        <div className="home-stage__ghosts" aria-hidden="true">
-          {homeGhostWords[language].map((word) => (
-            <span data-ghost-text={word} key={word}>{word}</span>
-          ))}
-        </div>
-
-        <div className="home-stage__intro">
-          <p className="home-stage__micro" data-ghost-text={homeSignal}>
-            {homeSignal}
-          </p>
-          <h1>
-            <SplitFogText text="IAN" />
-          </h1>
-          <p className="home-stage__whisper">
-            {homeWhisperParts.map((part, index) => (
-              <span data-ghost-text={part} key={`${part}-${index}`}>{part}</span>
-            ))}
-          </p>
-        </div>
-
-        <div className="home-stage__axes">
-          <span data-ghost-text={axesLabel}>{axesLabel}</span>
-          {homeAxes[language].map((axis) => (
-            <i data-ghost-text={axis} key={axis}>{axis}</i>
-          ))}
-        </div>
-
-        <div className="home-stage__portals">
-          {visibleDimensions.map((scene) => (
-            <SceneCard
-              disabled={Boolean(launchingScene)}
-              key={scene.slug}
-              language={language}
-              onActivate={launchScene}
-              scene={scene}
-              style={
-                {
-                  '--portal-x': `${scene.homePosition.x}%`,
-                  '--portal-y': `${scene.homePosition.y}%`,
-                  '--portal-rotate': `${scene.homePosition.rotate}deg`,
-                  '--portal-scale': scene.homePosition.scale,
-                } as CSSProperties
-              }
-            />
-          ))}
-
-        </div>
-      </section>
-
-      <section className="home-slices">
-        <div className="home-slices__viewport">
-          <div className="home-slices__track" style={{ transform: `translateX(-${activeSlice * 100}%)` }}>
-            {visibleDimensions.map((scene) => (
-              <article className={`dimension-slice dimension-slice--${scene.tone}`} key={scene.slug}>
-                <div className="dimension-slice__media">
-                  <AdaptiveMedia className="" loading="lazy" path={scene.media.still} />
-                  <AdaptiveMedia className="" loading="lazy" path={scene.media.texture} />
-                </div>
-                <div className="dimension-slice__copy">
-                  <span data-ghost-text={pickLocalized(scene.microLabel, language)}>{pickLocalized(scene.microLabel, language)}</span>
-                  <h2>
-                    {fragmentText(pickLocalized(scene.title, language)).map((part, index) => (
-                      <span data-ghost-text={part} key={`${part}-${index}`}>{part}</span>
-                    ))}
-                  </h2>
-                  <div className="dimension-slice__words" aria-hidden="true">
-                    {pickLocalizedList(scene.ambientWords, language).map((word) => (
-                      <i data-ghost-text={word} key={word}>{word}</i>
-                    ))}
-                  </div>
-                </div>
-              </article>
+      <section className="home-overview home-overview--dual">
+        <div className="home-stage home-overview__narrative">
+          <div className="home-stage__ghosts" aria-hidden="true">
+            {homeGhostWords[language].map((word) => (
+              <span data-ghost-text={word} key={word}>{word}</span>
             ))}
           </div>
-          <div className="home-slices__dots" aria-label="scene carousel">
-            {visibleDimensions.map((scene, index) => (
-              <button
-                aria-label={pickLocalized(scene.title, language)}
-                className={index === activeSlice ? 'is-active' : ''}
+
+          <div className="home-stage__intro">
+            <p className="home-stage__micro" data-ghost-text={homeSignal}>
+              {homeSignal}
+            </p>
+            <h1>
+              <SplitFogText text="IAN" />
+            </h1>
+            <p className="home-stage__whisper">
+              {homeWhisperParts.map((part, index) => (
+                <span data-ghost-text={part} key={`${part}-${index}`}>{part}</span>
+              ))}
+            </p>
+          </div>
+
+          <div className="home-stage__axes">
+            <span data-ghost-text={axesLabel}>{axesLabel}</span>
+            {homeAxes[language].map((axis) => (
+              <i data-ghost-text={axis} key={axis}>{axis}</i>
+            ))}
+          </div>
+
+          <div className="home-stage__portals">
+            {visibleDimensions.map((scene) => (
+              <SceneCard
+                disabled={Boolean(launchingScene)}
                 key={scene.slug}
-                onClick={() => setActiveSlice(index)}
-                type="button"
+                language={language}
+                onActivate={launchScene}
+                scene={scene}
+                style={
+                  {
+                    '--portal-x': `${scene.homePosition.x}%`,
+                    '--portal-y': `${scene.homePosition.y}%`,
+                    '--portal-rotate': `${scene.homePosition.rotate}deg`,
+                    '--portal-scale': scene.homePosition.scale,
+                  } as CSSProperties
+                }
               />
             ))}
           </div>
         </div>
-      </section>
 
-      <section className="home-archive">
-        <div className="section-heading">
-          <span data-ghost-text={archiveLabel}>{archiveLabel}</span>
-        </div>
-        <div className="home-archive__board">
-          {featuredArchive.map((asset, index) => {
-            const placement = archivePlacements[index % archivePlacements.length]
+        <section className="home-slices home-overview__carousel">
+          <div className="home-slices__viewport">
+            <div className="home-slices__track" style={{ transform: `translateX(-${activeSlice * 100}%)` }}>
+              {visibleDimensions.map((scene) => (
+                <article className={`dimension-slice dimension-slice--${scene.tone}`} key={scene.slug}>
+                  <div className="dimension-slice__media">
+                    <AdaptiveMedia className="" loading="lazy" path={scene.media.still} />
+                    <AdaptiveMedia className="" loading="lazy" path={scene.media.texture} />
+                  </div>
+                  <div className="dimension-slice__copy">
+                    <span data-ghost-text={pickLocalized(scene.microLabel, language)}>{pickLocalized(scene.microLabel, language)}</span>
+                    <h2>
+                      {fragmentText(pickLocalized(scene.title, language)).map((part, index) => (
+                        <span data-ghost-text={part} key={`${part}-${index}`}>{part}</span>
+                      ))}
+                    </h2>
+                    <div className="dimension-slice__words" aria-hidden="true">
+                      {pickLocalizedList(scene.ambientWords, language).map((word) => (
+                        <i data-ghost-text={word} key={word}>{word}</i>
+                      ))}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="home-slices__dots" aria-label="scene carousel">
+              {visibleDimensions.map((scene, index) => (
+                <button
+                  aria-label={pickLocalized(scene.title, language)}
+                  className={index === activeSlice ? 'is-active' : ''}
+                  key={scene.slug}
+                  onClick={() => setActiveSlice(index)}
+                  type="button"
+                />
+              ))}
+            </div>
+          </div>
+        </section>
 
-            return (
-              <button
-                aria-label={pickLocalized(asset.label, language)}
-                aria-pressed={activeArchive === asset.id}
-                className={`asset-fragment asset-fragment--${asset.type} ${
-                  activeArchive === asset.id ? 'is-active' : ''
-                }`}
-                data-tone={asset.tone}
-                key={asset.id}
-                onClick={() => setActiveArchive(asset.id)}
-                onMouseEnter={() => setActiveArchive(asset.id)}
-                style={
-                  {
-                    '--fragment-x': placement.x,
-                    '--fragment-y': placement.y,
-                    '--fragment-w': placement.w,
-                    '--fragment-h': placement.h,
-                    '--fragment-r': `${placement.rotate}deg`,
-                    '--fragment-depth': placement.depth,
-                  } as CSSProperties
-                }
-                type="button"
-              >
-                <AssetPreview active={activeArchive === asset.id} asset={asset} />
-              </button>
-            )
-          })}
-        </div>
+        <section className="home-archive home-overview__archive">
+          <div className="section-heading">
+            <span data-ghost-text={archiveLabel}>{archiveLabel}</span>
+          </div>
+          <div className="home-archive__board">
+            {featuredArchive.map((asset, index) => {
+              const placement = archivePlacements[index % archivePlacements.length]
+
+              return (
+                <button
+                  aria-label={pickLocalized(asset.label, language)}
+                  aria-pressed={activeArchive === asset.id}
+                  className={`asset-fragment asset-fragment--${asset.type} ${
+                    activeArchive === asset.id ? 'is-active' : ''
+                  }`}
+                  data-tone={asset.tone}
+                  key={asset.id}
+                  onClick={() => setActiveArchive(asset.id)}
+                  onMouseEnter={() => setActiveArchive(asset.id)}
+                  style={
+                    {
+                      '--fragment-x': placement.x,
+                      '--fragment-y': placement.y,
+                      '--fragment-w': placement.w,
+                      '--fragment-h': placement.h,
+                      '--fragment-r': `${placement.rotate}deg`,
+                      '--fragment-depth': placement.depth,
+                    } as CSSProperties
+                  }
+                  type="button"
+                >
+                  <AssetPreview active={activeArchive === asset.id} asset={asset} />
+                </button>
+              )
+            })}
+          </div>
+        </section>
       </section>
 
       

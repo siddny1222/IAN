@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import AdaptiveMedia from '../components/AdaptiveMedia'
 import SceneCard from '../components/SceneCard'
@@ -67,6 +67,18 @@ export default function ThemeScene() {
   const motionEnabled = performanceProfile.allowHeavyMotion && !performanceProfile.prefersReducedMotion
   const [sceneLayer, setSceneLayer] = useState<1 | 2 | 3>(1)
   const [activeArtifact, setActiveArtifact] = useState(0)
+  const stripRef = useRef<HTMLDivElement | null>(null)
+  const thumbRefs = useRef<Array<HTMLButtonElement | null>>([])
+  const dragStateRef = useRef({
+    active: false,
+    pointerId: -1,
+    startX: 0,
+    startLeft: 0,
+    velocity: 0,
+    lastX: 0,
+    lastTs: 0,
+    raf: 0,
+  })
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
@@ -156,6 +168,125 @@ export default function ThemeScene() {
     )
     .slice(0, 3)
   const ctaLabel = pickLocalized(interfaceCopy.enter, language)
+
+  useEffect(() => {
+    const strip = stripRef.current
+    if (!strip) {
+      return
+    }
+    const activeThumb = thumbRefs.current[activeArtifact]
+    activeThumb?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }, [activeArtifact])
+
+  useEffect(() => {
+    const strip = stripRef.current
+    const dragState = dragStateRef.current
+    if (!strip) {
+      return
+    }
+
+    const syncActiveByScroll = () => {
+      const centerX = strip.scrollLeft + strip.clientWidth / 2
+      let nearestIndex = 0
+      let nearestDistance = Number.POSITIVE_INFINITY
+
+      thumbRefs.current.forEach((node, index) => {
+        if (!node) {
+          return
+        }
+        const nodeCenter = node.offsetLeft + node.offsetWidth / 2
+        const distance = Math.abs(nodeCenter - centerX)
+        if (distance < nearestDistance) {
+          nearestDistance = distance
+          nearestIndex = index
+        }
+      })
+
+      if (nearestIndex !== activeArtifact) {
+        setActiveArtifact(nearestIndex)
+      }
+    }
+
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault()
+      strip.scrollBy({
+        left: event.deltaY * 0.9 + event.deltaX * 0.6,
+        behavior: 'smooth',
+      })
+    }
+
+    const onPointerDown = (event: PointerEvent) => {
+      const state = dragState
+      if (state.raf) {
+        window.cancelAnimationFrame(state.raf)
+      }
+      state.active = true
+      state.pointerId = event.pointerId
+      state.startX = event.clientX
+      state.startLeft = strip.scrollLeft
+      state.velocity = 0
+      state.lastX = event.clientX
+      state.lastTs = event.timeStamp
+      strip.setPointerCapture(event.pointerId)
+    }
+
+    const onPointerMove = (event: PointerEvent) => {
+      const state = dragState
+      if (!state.active || state.pointerId !== event.pointerId) {
+        return
+      }
+      const dx = event.clientX - state.startX
+      strip.scrollLeft = state.startLeft - dx
+      const elapsed = Math.max(16, event.timeStamp - state.lastTs)
+      state.velocity = (state.lastX - event.clientX) / elapsed * 16
+      state.lastX = event.clientX
+      state.lastTs = event.timeStamp
+    }
+
+    const runInertia = () => {
+      const state = dragState
+      state.velocity *= 0.92
+      strip.scrollLeft += state.velocity
+      syncActiveByScroll()
+      if (Math.abs(state.velocity) > 0.2) {
+        state.raf = window.requestAnimationFrame(runInertia)
+      } else {
+        state.raf = 0
+      }
+    }
+
+    const onPointerUp = (event: PointerEvent) => {
+      const state = dragState
+      if (state.pointerId !== event.pointerId) {
+        return
+      }
+      state.active = false
+      strip.releasePointerCapture(event.pointerId)
+      if (Math.abs(state.velocity) > 0.2) {
+        state.raf = window.requestAnimationFrame(runInertia)
+      }
+    }
+
+    strip.addEventListener('scroll', syncActiveByScroll, { passive: true })
+    strip.addEventListener('wheel', onWheel, { passive: false })
+    strip.addEventListener('pointerdown', onPointerDown)
+    strip.addEventListener('pointermove', onPointerMove)
+    strip.addEventListener('pointerup', onPointerUp)
+    strip.addEventListener('pointercancel', onPointerUp)
+
+    return () => {
+      if (dragState.raf) {
+        window.cancelAnimationFrame(dragState.raf)
+      }
+      strip.removeEventListener('scroll', syncActiveByScroll)
+      strip.removeEventListener('wheel', onWheel)
+      strip.removeEventListener('pointerdown', onPointerDown)
+      strip.removeEventListener('pointermove', onPointerMove)
+      strip.removeEventListener('pointerup', onPointerUp)
+      strip.removeEventListener('pointercancel', onPointerUp)
+    }
+  }, [activeArtifact, heroArtifacts.length])
+
   useEffect(() => {
     if (!scene) {
       return
@@ -308,7 +439,7 @@ export default function ThemeScene() {
                 <MediaSurface className="dimension-film__main-asset" path={scene.media.still} />
               )}
             </div>
-            <div className="dimension-film__strip">
+            <div className="dimension-film__strip" ref={stripRef}>
               {heroArtifacts.map((artifact, index) => (
                 <button
                   aria-label={`${sceneTitle} ${artifact.id}`}
@@ -316,6 +447,9 @@ export default function ThemeScene() {
                   className={`dimension-film__thumb ${activeArtifact === index ? 'is-active' : ''}`}
                   key={artifact.id}
                   onClick={() => setActiveArtifact(index)}
+                  ref={(node) => {
+                    thumbRefs.current[index] = node
+                  }}
                   type="button"
                 >
                   <MediaSurface
@@ -335,15 +469,18 @@ export default function ThemeScene() {
       >
         <div className="dimension-textboxes" aria-label={driftLabel}>
           <article className="dimension-textbox">
-            <span data-ghost-text={styleLabel}>{styleLabel}</span>
-            <p data-ghost-text={sceneEssence ? pickLocalized(sceneEssence.style, language) : ''}>
+            <span className="dimension-textbox__label" data-ghost-text={styleLabel}>{styleLabel}</span>
+            <p className="dimension-textbox__paragraph" data-ghost-text={sceneEssence ? pickLocalized(sceneEssence.style, language) : ''}>
               {sceneEssence ? pickLocalized(sceneEssence.style, language) : ''}
             </p>
-            <ul>
+            <ul className="dimension-textbox__tags">
               {[...visualCloud.slice(0, 2), ...interactionCloud.slice(0, 2)].map((entry, index) => (
                 <li data-ghost-text={entry} key={`${entry}-${index}`}>{entry}</li>
               ))}
             </ul>
+            <blockquote className="dimension-textbox__quote" data-ghost-text={sceneSignal}>
+              “{sceneSignal}”
+            </blockquote>
             {crossLinks[0] ? (
               <Link className="dimension-textbox__cta xp-button xp-button--mini" to={crossLinks[0].path}>
                 {ctaLabel}
@@ -351,15 +488,18 @@ export default function ThemeScene() {
             ) : null}
           </article>
           <article className="dimension-textbox">
-            <span data-ghost-text={motifLabel}>{motifLabel}</span>
-            <p data-ghost-text={sceneEssence ? pickLocalized(sceneEssence.motif, language) : ''}>
+            <span className="dimension-textbox__label" data-ghost-text={motifLabel}>{motifLabel}</span>
+            <p className="dimension-textbox__paragraph" data-ghost-text={sceneEssence ? pickLocalized(sceneEssence.motif, language) : ''}>
               {sceneEssence ? pickLocalized(sceneEssence.motif, language) : ''}
             </p>
-            <ul>
+            <ul className="dimension-textbox__tags">
               {[...internetCloud.slice(0, 2), ...physicalCloud.slice(0, 2)].map((entry, index) => (
                 <li data-ghost-text={entry} key={`${entry}-${index}`}>{entry}</li>
               ))}
             </ul>
+            <blockquote className="dimension-textbox__quote" data-ghost-text={sceneCoordinate}>
+              “{sceneCoordinate}”
+            </blockquote>
             {crossLinks[1] ? (
               <Link className="dimension-textbox__cta xp-button xp-button--mini" to={crossLinks[1].path}>
                 {ctaLabel}
