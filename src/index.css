@@ -308,7 +308,7 @@ body.curtain-active .signal-header {
     radial-gradient(circle at 76% 28%, color-mix(in srgb, var(--tone-a) 22%, transparent), transparent 26%),
     radial-gradient(circle at 48% 76%, color-mix(in srgb, var(--tone-c) 18%, transparent), transparent 30%),
     radial-gradient(circle at 60% 40%, rgba(255, 245, 230, 0.08), transparent 28%);
-  filter: blur(48px);
+  filter: blur(36px);
   opacity: 0.75;
   animation: atmosphereBloom 18s ease-in-out infinite alternate;
 }
@@ -376,12 +376,18 @@ body.curtain-active .signal-header {
   pointer-events: none;
   overflow: hidden;
   isolation: isolate;
+  contain: layout paint;
 }
 
 /* ── FOG-FAR: deep atmospheric haze, heavy blur, scene-reactive ── */
 .dreamcore-veil__fog-far {
   position: absolute;
   inset: -40%;
+  background:
+    radial-gradient(ellipse 80% 65% at 12% 18%, rgba(255, 248, 235, 0.30), transparent 65%),
+    radial-gradient(ellipse 65% 80% at 88% 22%, rgba(200, 220, 255, 0.26), transparent 60%),
+    radial-gradient(ellipse 75% 60% at 45% 88%, rgba(255, 216, 236, 0.22), transparent 65%),
+    radial-gradient(ellipse 50% 55% at 68% 48%, rgba(255, 250, 240, 0.20), transparent 55%);
   background:
     radial-gradient(ellipse 80% 65% at 12% 18%,
       color-mix(in srgb, var(--tone-a, #fff8eb) 36%, transparent), transparent 65%),
@@ -391,7 +397,7 @@ body.curtain-active .signal-header {
       color-mix(in srgb, var(--tone-c, #ffd8ec) 28%, transparent), transparent 65%),
     radial-gradient(ellipse 50% 55% at 68% 48%,
       rgba(255, 250, 240, 0.20), transparent 55%);
-  filter: blur(90px);
+  filter: blur(60px);
   opacity: 0.9;
   animation: dreamFogFar 36s ease-in-out infinite alternate;
   will-change: transform;
@@ -408,7 +414,7 @@ body.curtain-active .signal-header {
       rgba(210, 222, 255, 0.14), transparent),
     radial-gradient(ellipse 55% 30% at 52% 60%,
       rgba(255, 235, 248, 0.12), transparent);
-  filter: blur(22px);
+  filter: blur(16px);
   animation: dreamFogNear 18s ease-in-out infinite alternate-reverse;
 }
 
@@ -521,6 +527,39 @@ body.curtain-active .signal-header {
       rgba(4, 2, 10, 0.22) 52%,
       rgba(4, 2, 10, 0.65) 100%
     );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REDUCED MOTION — disable all heavy animations immediately
+   (CSS fallback fires before JS; JS tier detection is secondary)
+   ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .dreamcore-veil__fog-far,
+  .dreamcore-veil__fog-near,
+  .dreamcore-veil__chroma,
+  .dreamcore-veil__bloom,
+  .dreamcore-veil__surface::before,
+  .app-atmosphere::before,
+  .app-atmosphere::after {
+    animation: none !important;
+  }
+
+  [data-ghost-text]::before,
+  [data-ghost-text]::after {
+    animation: none !important;
+  }
+
+  .scene-card,
+  .dimension-panel,
+  .dimension-hero__artifact,
+  .app-main,
+  .home-stage,
+  .home-archive,
+  .home-slices,
+  .dimension-grid,
+  .dimension-drift {
+    transition-duration: 80ms !important;
+  }
 }
 
 .route-veil {
@@ -992,6 +1031,7 @@ html[data-performance-tier='lite'] .dimension-hero__asset {
   line-height: 0.9;
   letter-spacing: 0.22em;
   text-transform: uppercase;
+  color: var(--tone-a, rgba(255, 248, 235, 0.9));
   color: color-mix(in srgb, var(--tone-a) 82%, white);
   text-shadow: var(--title-shadow-soft);
   mix-blend-mode: screen;
