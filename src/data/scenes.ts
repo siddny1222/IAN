@@ -161,21 +161,6 @@ export const interfaceCopy = {
     en: 'swipe / scroll / click to enter',
     de: 'Wischen / Scrollen / Klicken / Öffnen',
   },
-  exploreStart: {
-    zh: '开始探索',
-    en: 'start exploring',
-    de: 'Erkundung starten',
-  },
-  sceneConceptLabel: {
-    zh: '概念记录',
-    en: 'concept log',
-    de: 'Konzeptprotokoll',
-  },
-  sceneArchiveLabel: {
-    zh: '档案轨道',
-    en: 'archive tracks',
-    de: 'Archiv-Spuren',
-  },
 } satisfies Record<string, LocalizedText>
 
 export const homeAxes: LocalizedList = {
@@ -715,90 +700,6 @@ export const dimensions: Dimension[] = [
 ]
 
 export const visibleDimensions = dimensions.filter((dimension) => !dimension.hidden)
-export const dimensionConceptCopy: Record<DimensionSlug, LocalizedText> = {
-  dreamfield: {
-    zh: '这一分区像被压缩过度的夏日桌面。草地、云层与塑料光泽被反复转载，最终只留下能让人短暂停留的温柔假象。',
-    en: 'This zone feels like an over-compressed summer desktop: lawn, cloud, and plastic shine reposted until only a soft illusion remains for brief shelter.',
-    de: 'Diese Zone wirkt wie ein überkomprimierter Sommer-Desktop: Wiese, Wolke und Plastikglanz wurden so oft kopiert, bis nur eine sanfte Zuflucht blieb.',
-  },
-  'browser-shrine': {
-    zh: '这里收藏早期网页的礼仪：闪烁链接、旧窗口边框、加载中的祈祷。每次点击都像一次向失效协议致敬。',
-    en: 'Here the rituals of early web survive: blinking links, old window chrome, prayers during loading. Every click salutes a broken protocol.',
-    de: 'Hier leben die Rituale des frühen Netzes weiter: blinkende Links, alte Fensterrahmen, Gebete im Ladezustand. Jeder Klick grüßt ein defektes Protokoll.',
-  },
-  'silent-bedroom': {
-    zh: '静默卧室是离线后的夜间缓存。屏幕余辉、被遗忘的键盘和半睡半醒的噪点，把私人记忆改写成公共梦境。',
-    en: 'Silent Bedroom is a night cache after disconnect: monitor afterglow, forgotten keys, and half-awake noise rewriting private memory into shared dream.',
-    de: 'Silent Bedroom ist ein Nacht-Cache nach der Trennung: Monitornachglühen, vergessene Tasten und halbwaches Rauschen schreiben private Erinnerung zum gemeinsamen Traum um.',
-  },
-  poolcore: {
-    zh: '池核区记录被时间浸泡的蓝色建筑。水面反射像循环失败的界面刷新，让人分不清此刻是在清晨还是旧录像带里。',
-    en: 'Poolcore logs blue architecture soaked by time. Reflections behave like failed interface refresh, blurring whether this is dawn or an old tape.',
-    de: 'Poolcore protokolliert blaue Architektur im Zeitsud. Spiegelungen wirken wie fehlgeschlagene Interface-Refreshs und verwischen Morgenlicht mit altem Bandmaterial.',
-  },
-  'dead-mall': {
-    zh: '废商场分区保存消费时代的回声：空置中庭、褪色导视和迟到的霓虹。路线仍完整，目的地却早已撤场。',
-    en: 'Dead Mall preserves retail-era echoes: vacant atriums, faded wayfinding, neon arriving too late. The route map remains; the destinations are gone.',
-    de: 'Dead Mall bewahrt Echos des Konsumzeitalters: leere Atrien, verblasste Leitsysteme, verspätetes Neon. Die Wege bleiben, die Ziele sind geräumt.',
-  },
-  backrooms: {
-    zh: '后室像被错误导出的办公平面图。灯管嗡鸣、墙纸重复、转角无尽，空间不断提示你已离开主叙事。',
-    en: 'Backrooms resembles an office floorplan exported wrong: humming tubes, repeated wallpaper, endless corners reminding you the main narrative has been left behind.',
-    de: 'Backrooms gleicht einem falsch exportierten Bürogrundriss: summende Röhren, wiederholte Tapete, endlose Ecken als Hinweis, dass die Haupterzählung verlassen wurde.',
-  },
-  'post-soviet-signal': {
-    zh: '后苏联信号由楼体、电视雪花和冬季频率组成。频道不断切换，却始终停在同一段历史回声上。',
-    en: 'Post-Soviet Signal is built from tower blocks, TV snow, and winter frequencies. Channels keep switching, yet history loops on the same echo.',
-    de: 'Post-Soviet Signal besteht aus Plattenbauten, Fernsehrauschen und Winterfrequenzen. Die Kanäle wechseln ständig, doch die Geschichte bleibt im selben Echo hängen.',
-  },
-  'error-shrine': {
-    zh: '故障圣坛是本档案最不稳定的层。图像被烧蚀、接口被误译，仍有人在这里尝试重新连接世界。',
-    en: 'Error Shrine is the archive’s least stable layer: images scorched, interfaces mistranslated, yet someone still attempts to reconnect the world from here.',
-    de: 'Error Shrine ist die instabilste Schicht des Archivs: Bilder angebrannt, Interfaces fehlübersetzt, und doch versucht hier noch jemand, die Welt neu zu verbinden.',
-  },
-}
-export const dimensionArchiveIntroCopy: Record<DimensionSlug, LocalizedText> = {
-  dreamfield: {
-    zh: '本条目采集“晴日幻觉”的四组证据：视觉皮层、交互回路、网络旧物与现实残留。',
-    en: 'This record logs four traces of a synthetic sunny day: visual skin, interaction loop, web relics, and physical residue.',
-    de: 'Dieser Eintrag sammelt vier Spuren eines synthetischen Sonnentags: visuelle Haut, Interaktionsschleife, Netzrelikte und materielle Rückstände.',
-  },
-  'browser-shrine': {
-    zh: '以下轨道用于校对旧网页仪式：看见、点击、连线与触碰如何共同组成“浏览”本体。',
-    en: 'The tracks below calibrate old web rituals: how seeing, clicking, linking, and touching assemble the body of browsing.',
-    de: 'Die folgenden Spuren kalibrieren alte Webrituale: wie Sehen, Klicken, Verlinken und Berühren den Körper des Browsens bilden.',
-  },
-  'silent-bedroom': {
-    zh: '此处归档夜间设备的低声回放，记录私密空间如何被屏幕光改写成可共享的梦。',
-    en: 'Here we archive the low replay of nocturnal devices, tracing how private rooms are rewritten by monitor light into shared dream.',
-    de: 'Hier archivieren wir das leise Replay nächtlicher Geräte und verfolgen, wie private Räume durch Monitorlicht zum gemeinsamen Traum umgeschrieben werden.',
-  },
-  poolcore: {
-    zh: '轨道样本围绕“湿度记忆”展开：色块、回声、旧网印痕与实体瓷砖互相漂移。',
-    en: 'These tracks revolve around humid memory: color fields, echoes, old-net imprints, and tiled matter drifting through each other.',
-    de: 'Diese Spuren kreisen um feuchte Erinnerung: Farbflächen, Echos, Alt-Netz-Abdrücke und Kachelmaterie treiben ineinander.',
-  },
-  'dead-mall': {
-    zh: '档案将商场拆分为四条慢速信号：景观、行为、网络复写与物理空壳。',
-    en: 'The archive breaks the mall into four slow signals: scenery, behavior, network rewrites, and physical shells.',
-    de: 'Das Archiv zerlegt die Mall in vier langsame Signale: Szenerie, Verhalten, Netzwerk-Umschriften und materielle Hüllen.',
-  },
-  backrooms: {
-    zh: '我们把迷路感分层标注：先是视觉重复，再是动作迟滞，然后是网络噪声，最后是空间触感。',
-    en: 'We annotate disorientation in layers: visual repetition first, delayed movement next, then network noise, and finally spatial touch.',
-    de: 'Wir markieren Verirrung in Schichten: zuerst visuelle Wiederholung, dann verzögerte Bewegung, danach Netzrauschen und zuletzt räumliche Haptik.',
-  },
-  'post-soviet-signal': {
-    zh: '轨道收录冬季频道中的四类碎片，用于追踪信号如何在历史与当下之间反复失真。',
-    en: 'The tracks collect four fragment classes from winter channels, tracing how signals distort again and again between history and now.',
-    de: 'Die Spuren sammeln vier Fragmentklassen aus Winterkanälen und verfolgen, wie Signale zwischen Geschichte und Gegenwart wiederholt verzerren.',
-  },
-  'error-shrine': {
-    zh: '下列条目是故障层的临时修复日志：每个标签都可能是线索，也可能是新的裂口。',
-    en: 'The entries below are temporary repair logs from the fault layer; each tag may be a clue—or a fresh fracture.',
-    de: 'Die folgenden Einträge sind provisorische Reparaturlogs der Fehlerschicht; jedes Tag kann Spur sein oder neuer Riss.',
-  },
-}
 const dimensionsBySlug = new Map(dimensions.map((dimension) => [dimension.slug, dimension]))
 const dimensionsByPath = new Map(dimensions.map((dimension) => [dimension.path, dimension]))
 
