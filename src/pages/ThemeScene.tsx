@@ -7,6 +7,7 @@ import { useLocale } from '../context/useLocale'
 import { scheduleMediaWarmup } from '../lib/mediaLoader'
 import { buildMediaQueue } from '../lib/performance'
 import { primeHomeExperienceRoute } from '../lib/routeModules'
+import { useReveal } from '../lib/useReveal'
 import {
   dimensionPanelMedia,
   dimensions,
@@ -67,6 +68,8 @@ export default function ThemeScene() {
   const [activeArtifact, setActiveArtifact] = useState(0)
   const [hoveredArtifact, setHoveredArtifact] = useState<number | null>(null)
   const [activePanelId, setActivePanelId] = useState<string | null>(null)
+  const gridReveal = useReveal<HTMLElement>({ threshold: 0.08 })
+  const driftReveal = useReveal<HTMLElement>({ threshold: 0.12 })
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
@@ -328,7 +331,10 @@ export default function ThemeScene() {
         </div>
       </section>
 
-      <section className="dimension-grid">
+      <section
+        className={`dimension-grid section-reveal ${gridReveal.revealed ? 'section-reveal--shown' : ''}`}
+        ref={gridReveal.ref}
+      >
         <div className={`dimension-stack ${activePanelId ? 'has-active' : ''}`}>
           {panelDeck.map((panel, index) => (
             <button
@@ -390,7 +396,10 @@ export default function ThemeScene() {
         </div>
       </section>
 
-      <section className="dimension-drift">
+      <section
+        className={`dimension-drift section-reveal ${driftReveal.revealed ? 'section-reveal--shown' : ''}`}
+        ref={driftReveal.ref}
+      >
         <div className="section-heading">
           <span data-ghost-text={driftLabel}>{driftLabel}</span>
         </div>
