@@ -559,8 +559,9 @@ body.curtain-active .signal-header {
   }
 }
 
-/* immersive upgrade: mosaic opening + fluid title + home carousel */
-.boot-curtain__mosaic {
+/* ── GSAP mosaic: scatter grid on opening, idle breath on closed ── */
+.boot-curtain__mosaic,
+.boot-curtain__mosaic-idle {
   position: absolute;
   inset: 0;
   z-index: 3;
@@ -568,33 +569,48 @@ body.curtain-active .signal-header {
   grid-template-columns: repeat(12, minmax(0, 1fr));
   grid-template-rows: repeat(6, minmax(0, 1fr));
   pointer-events: none;
-  mix-blend-mode: screen;
+  will-change: opacity;
 }
 
+.boot-curtain__mosaic {
+  mix-blend-mode: screen;
+  z-index: 4;
+}
+
+/* Tiles start transparent; GSAP controls the opening scatter */
 .boot-curtain__mosaic span {
   opacity: 0;
   background:
-    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.24), transparent 62%),
-    linear-gradient(120deg, rgba(162, 209, 255, 0.24), rgba(255, 181, 218, 0.16));
-  transform: scale(1.08);
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.28), transparent 60%),
+    linear-gradient(128deg, rgba(162, 209, 255, 0.28), rgba(255, 181, 218, 0.18));
+  transform-origin: center center;
 }
 
-.boot-curtain--opening .boot-curtain__mosaic span {
-  animation: mosaicLift 720ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: var(--mosaic-delay, 0ms);
+/* Idle breathing mosaic – visible during loading phase */
+.boot-curtain__mosaic-idle {
+  mix-blend-mode: overlay;
+  z-index: 2;
 }
 
-@keyframes mosaicLift {
-  0% {
-    opacity: 0.55;
-    transform: scale(1.08);
-    filter: blur(0);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.92);
-    filter: blur(5px);
-  }
+.boot-curtain__mosaic-idle span {
+  opacity: 0;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(200, 230, 255, 0.18), transparent 70%);
+  animation: mosaicBreath 3.8s ease-in-out infinite;
+  animation-delay: calc(
+    (var(--tile-index, 0) % 12) * 180ms + floor(var(--tile-index, 0) / 12) * 90ms
+  );
+}
+
+.boot-curtain--opening .boot-curtain__mosaic-idle,
+.boot-curtain--open .boot-curtain__mosaic-idle {
+  opacity: 0 !important;
+  transition: opacity 0.24s ease;
+}
+
+@keyframes mosaicBreath {
+  0%, 100% { opacity: 0; }
+  40%, 60% { opacity: 0.12; }
 }
 
 .split-fog-text {
@@ -655,6 +671,81 @@ body.curtain-active .signal-header {
   }
 }
 
+/* ── FluidText – LACRAPULE STUDIO physics scatter ── */
+.fluid-text {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.05em;
+  position: relative;
+  isolation: isolate;
+  cursor: default;
+}
+
+.fluid-text__char {
+  display: inline-block;
+  position: relative;
+  color: rgba(241, 234, 224, 0.94);
+  /* GSAP writes transform/opacity/filter inline; keep transitions OFF to avoid fighting physics */
+  transition: none;
+  will-change: transform, opacity;
+}
+
+/* Alternate font weights like the existing title chars */
+.fluid-text__char:nth-child(odd) {
+  font-family: var(--display-accent-font);
+  font-weight: 700;
+  font-style: italic;
+}
+
+.fluid-text__char:nth-child(even) {
+  font-family: var(--shout-font);
+  font-weight: 900;
+}
+
+/* Subtle colour offsets matching palette per position */
+.fluid-text__char:nth-child(3n + 1) {
+  color: var(--ink-warm);
+}
+
+.fluid-text__char:nth-child(3n + 2) {
+  color: var(--ink-blue);
+}
+
+.fluid-text__char:nth-child(3n) {
+  color: var(--ink-rose);
+}
+
+/* mix-blend-mode makes colours pop on dark backdrops */
+.boot-curtain__center h2 .fluid-text,
+.home-stage__intro h1 .fluid-text,
+.dimension-hero h1 .fluid-text {
+  mix-blend-mode: screen;
+}
+
+/* ── Neutralise CSS keyframe animations that fight GSAP inline transforms ── */
+/* The h1/h2 span selectors apply glyphDrift + glyphPhaseShift to every child
+   span, including fluid-text__char. GSAP sets transform inline each frame,
+   so we need the CSS animation OFF on these elements.                        */
+.boot-curtain__center h2 .fluid-text,
+.home-stage__intro h1 .fluid-text,
+.dimension-hero h1 .fluid-text,
+.boot-curtain__center h2 .fluid-text__char,
+.home-stage__intro h1 .fluid-text__char,
+.dimension-hero h1 .fluid-text__char {
+  animation: none;
+  /* base transform cleared; GSAP writes translate inline each frame */
+  transform: none;
+}
+
+/* Lite tier: disable GSAP physics, show plain text */
+html[data-performance-tier='lite'] .fluid-text__char {
+  animation: none !important;
+  transform: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
 .home-slices {
   display: block;
 }
@@ -702,6 +793,32 @@ body.curtain-active .signal-header {
 .home-slices__dots button.is-active {
   background: rgba(193, 231, 255, 0.9);
   transform: scale(1.22);
+}
+
+/* Carousel progress bar */
+.home-slices__progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 5;
+  background: rgba(188, 214, 232, 0.12);
+  overflow: hidden;
+}
+
+.home-slices__progress::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 0;
+  width: var(--slice-progress, 0%);
+  background: linear-gradient(
+    90deg,
+    rgba(162, 209, 255, 0.7),
+    rgba(255, 178, 220, 0.5)
+  );
+  transition: width 680ms cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 8px rgba(162, 209, 255, 0.4);
 }
 
 /* 2026 compact pass */
@@ -2532,23 +2649,31 @@ html[data-performance-tier='lite'] .dimension-hero__asset {
 .dimension-slice__media {
   position: absolute;
   inset: 0;
+  overflow: hidden;
 }
 
-.dimension-slice__media img {
+/* Cover any media element (img or video) inside the slice */
+.dimension-slice__media img,
+.dimension-slice__media video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
-.dimension-slice__media img:first-child {
-  opacity: 0.56;
+/* Explicit class names for still + texture (replaces :first-child/:last-child) */
+.dimension-slice__still {
+  opacity: 0.62;
+  z-index: 1;
 }
 
-.dimension-slice__media img:last-child {
-  opacity: 0.16;
+.dimension-slice__texture {
+  opacity: 0.14;
   mix-blend-mode: screen;
+  z-index: 2;
+  filter: saturate(0.6);
 }
 
 .dimension-slice__copy {
@@ -5284,4 +5409,115 @@ html[data-performance-tier='lite'] .home-slices.section-reveal--shown > * {
   .boot-curtain__veil {
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GSAP FluidText + mosaic enhancements – global overrides
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Carousel smooth transition upgrade ── */
+.home-slices__viewport {
+  border-radius: 22px;
+}
+
+.home-slices__track {
+  transition: transform 780ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Slide image parallax layer */
+.dimension-slice__still {
+  transition: transform 780ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Scene card magnetic hover ── */
+.scene-card {
+  transition:
+    transform 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 360ms ease,
+    opacity 220ms ease;
+}
+
+.scene-card:hover {
+  transform:
+    translate(var(--portal-x, 0), var(--portal-y, 0))
+    rotate(calc(var(--portal-rotate, 0deg) * 0.6))
+    scale(calc(var(--portal-scale, 1) * 1.06))
+    !important;
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 0 24px color-mix(in srgb, var(--card-a, #aac) 18%, transparent);
+}
+
+/* ── Dimension film thumbnail upgrade ── */
+.dimension-film__thumb {
+  transition:
+    transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.dimension-film__thumb:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+}
+
+/* ── Dimension textbox hover glow ── */
+.dimension-textbox {
+  transition:
+    transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 320ms ease;
+}
+
+.dimension-textbox:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.16),
+    0 20px 40px rgba(0, 0, 0, 0.32),
+    0 0 0 1px color-mix(in srgb, var(--tone-b, #88aacc) 22%, transparent);
+}
+
+/* ── ScrollTrigger reveal: ensure initial hidden state ── */
+.gsap-hidden {
+  opacity: 0;
+  transform: translateY(22px);
+  filter: blur(5px);
+}
+
+/* ── Idle mosaic tile pulse: disable on lite ── */
+html[data-performance-tier='lite'] .boot-curtain__mosaic-idle {
+  display: none;
+}
+
+/* ── Fluid-text base font size inherits from container ── */
+.home-stage__intro h1 .fluid-text,
+.dimension-hero h1 .fluid-text {
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+
+/* ── Smooth scrollbar appearance on desktop ── */
+@supports (scrollbar-width: thin) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(162, 209, 255, 0.22) transparent;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(162, 209, 255, 0.22);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(162, 209, 255, 0.38);
 }

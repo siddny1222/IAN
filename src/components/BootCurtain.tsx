@@ -2,9 +2,10 @@ import type { CSSProperties } from 'react'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import AdaptiveMedia from './AdaptiveMedia'
-import SplitFogText from './SplitFogText'
+import FluidText from './FluidText'
 import { usePerformanceProfile } from '../context/usePerformanceProfile'
 import { withBase } from '../lib/performance'
+import { gsap } from '../lib/gsapInit'
 import {
   fragmentText,
   interfaceCopy,
@@ -19,6 +20,24 @@ type BootCurtainProps = {
   phase: 'closed' | 'opening' | 'open'
 }
 
+const COLS = 12
+const ROWS = 6
+const TOTAL_TILES = COLS * ROWS
+
+// Pre-compute per-tile scatter vectors (radial from center)
+const CX = (COLS - 1) / 2
+const CY = (ROWS - 1) / 2
+
+type TileVector = { dx: number; dy: number; dist: number; angle: number }
+const tileVectors: TileVector[] = Array.from({ length: TOTAL_TILES }, (_, idx) => {
+  const col = idx % COLS
+  const row = Math.floor(idx / COLS)
+  const dx = col - CX
+  const dy = row - CY
+  const dist = Math.sqrt(dx * dx + dy * dy) || 0.1
+  return { dx: dx / dist, dy: dy / dist, dist, angle: Math.atan2(dy, dx) }
+})
+
 export default function BootCurtain({
   language,
   loadingSources,
@@ -27,6 +46,7 @@ export default function BootCurtain({
 }: BootCurtainProps) {
   const performanceProfile = usePerformanceProfile()
   const dialogRef = useRef<HTMLDivElement>(null)
+  const mosaicRef = useRef<HTMLDivElement>(null)
   const pointerStartYRef = useRef<number | null>(null)
   const [loadedCount, setLoadedCount] = useState(0)
   const [assetsReady, setAssetsReady] = useState(false)
@@ -37,47 +57,95 @@ export default function BootCurtain({
   const statusLabel = ready
     ? interfaceCopy.bootReady[language]
     : `${progress.toString().padStart(3, '0')}% / ${loadedCount.toString().padStart(2, '0')} / ${totalSources.toString().padStart(2, '0')}`
-  const mosaicTiles = Array.from({ length: 72 }, (_, index) => index)
+  const mosaicTiles = Array.from({ length: TOTAL_TILES }, (_, index) => index)
 
   const handleEnter = useCallback(() => {
-    if (!ready) {
-      return
-    }
-
+    if (!ready) return
     onEnter()
   }, [ready, onEnter])
 
   const handleEnterRef = useRef(handleEnter)
-  useEffect(() => {
-    handleEnterRef.current = handleEnter
-  }, [handleEnter])
+  useEffect(() => { handleEnterRef.current = handleEnter }, [handleEnter])
 
   useEffect(() => {
-    if (phase === 'closed') {
-      dialogRef.current?.focus()
-    }
+    if (phase === 'closed') dialogRef.current?.focus()
   }, [phase])
 
   useEffect(() => {
     if (phase === 'open') return
     const el = dialogRef.current
     if (!el) return
-
     const onWheel = (event: WheelEvent) => {
       if (Math.abs(event.deltaY) > 18) {
         event.preventDefault()
         handleEnterRef.current()
       }
     }
-
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
   }, [phase])
 
+  // GSAP mosaic opening animation
   useEffect(() => {
-    if (phase !== 'closed') {
-      return
-    }
+    if (phase !== 'opening') return
+    const container = mosaicRef.current
+    if (!container) return
+
+    const tiles = Array.from(container.querySelectorAll<HTMLElement>('span'))
+    if (!tiles.length) return
+
+    const tl = gsap.timeline()
+
+    // Phase 1: tiles flash into view from center (brief mosaic grid reveal)
+    tl.fromTo(
+      tiles,
+      { opacity: 0, scale: 1.0, filter: 'blur(0px)' },
+      {
+        opacity: (i) => 0.28 + tileVectors[i].dist * 0.06,
+        scale: 1.04,
+        duration: 0.18,
+        ease: 'power2.in',
+        stagger: {
+          from: 'center',
+          amount: 0.14,
+        },
+      },
+    )
+
+    // Phase 2: tiles scatter radially outward with rotation
+    tl.to(
+      tiles,
+      {
+        opacity: 0,
+        scale: (_i) => gsap.utils.random(0.05, 0.55) as number,
+        x: (i) => {
+          const v = tileVectors[i]
+          return v.dx * (gsap.utils.random(55, 180) as number)
+        },
+        y: (i) => {
+          const v = tileVectors[i]
+          return v.dy * (gsap.utils.random(55, 180) as number)
+        },
+        rotation: (i) => {
+          const sign = tileVectors[i].angle > 0 ? 1 : -1
+          return sign * (gsap.utils.random(18, 72) as number)
+        },
+        filter: 'blur(9px)',
+        duration: 0.62,
+        ease: 'power3.in',
+        stagger: {
+          from: 'center',
+          amount: 0.38,
+        },
+      },
+      '-=0.02',
+    )
+
+    return () => { tl.kill() }
+  }, [phase])
+
+  useEffect(() => {
+    if (phase !== 'closed') return
 
     let completed = 0
     let cancelled = false
@@ -87,16 +155,10 @@ export default function BootCurtain({
     const minimumDuration = 1400
 
     const finishIfReady = () => {
-      if (completed < totalSources) {
-        return
-      }
-
+      if (completed < totalSources) return
       const remaining = Math.max(0, minimumDuration - (performance.now() - startedAt))
       settleTimer = window.setTimeout(() => {
-        if (cancelled) {
-          return
-        }
-
+        if (cancelled) return
         setLoadedCount(totalSources)
         setProgress(100)
         setAssetsReady(true)
@@ -104,17 +166,13 @@ export default function BootCurtain({
     }
 
     const markLoaded = () => {
-      if (cancelled) {
-        return
-      }
-
+      if (cancelled) return
       completed += 1
       const assetRatio = completed / totalSources
       const elapsedRatio = Math.min((performance.now() - startedAt) / minimumDuration, 1)
       const blendedProgress = completed === totalSources
         ? 100
         : Math.min(96, Math.round(assetRatio * 88 + elapsedRatio * 12))
-
       setLoadedCount(completed)
       setProgress((current) => (blendedProgress > current ? blendedProgress : current))
       finishIfReady()
@@ -123,10 +181,7 @@ export default function BootCurtain({
     const once = (callback: () => void) => {
       let called = false
       return () => {
-        if (called) {
-          return
-        }
-
+        if (called) return
         called = true
         callback()
       }
@@ -155,18 +210,13 @@ export default function BootCurtain({
         video.addEventListener('canplay', handleDone, { once: true })
         video.addEventListener('error', handleDone, { once: true })
         video.load()
-
-        if (video.readyState >= 2) {
-          window.setTimeout(handleDone, 0)
-        }
-
+        if (video.readyState >= 2) window.setTimeout(handleDone, 0)
         cleanupFns.push(() => {
           video.removeEventListener('loadeddata', handleDone)
           video.removeEventListener('canplay', handleDone)
           video.removeEventListener('error', handleDone)
           video.src = ''
         })
-
         return
       }
 
@@ -175,11 +225,7 @@ export default function BootCurtain({
       image.onload = handleDone
       image.onerror = handleDone
       image.src = withBase(source)
-
-      if (image.complete) {
-        window.setTimeout(handleDone, 0)
-      }
-
+      if (image.complete) window.setTimeout(handleDone, 0)
       cleanupFns.push(() => {
         image.onload = null
         image.onerror = null
@@ -193,9 +239,7 @@ export default function BootCurtain({
     }
   }, [loadingSources, phase, totalSources])
 
-  if (phase === 'open' || typeof document === 'undefined') {
-    return null
-  }
+  if (phase === 'open' || typeof document === 'undefined') return null
 
   return createPortal(
     <div
@@ -209,20 +253,12 @@ export default function BootCurtain({
           handleEnter()
         }
       }}
-      onPointerDown={(event) => {
-        pointerStartYRef.current = event.clientY
-      }}
+      onPointerDown={(event) => { pointerStartYRef.current = event.clientY }}
       onPointerUp={(event) => {
         const startY = pointerStartYRef.current
         pointerStartYRef.current = null
-
-        if (startY === null) {
-          return
-        }
-
-        if (startY - event.clientY > 86) {
-          handleEnter()
-        }
+        if (startY === null) return
+        if (startY - event.clientY > 86) handleEnter()
       }}
       role="dialog"
       tabIndex={0}
@@ -252,20 +288,27 @@ export default function BootCurtain({
           staticFallback="/media/ian-glitch-still.png"
         />
       ) : null}
+
       {performanceProfile.allowHeavyMotion ? (
-        <div className="boot-curtain__mosaic" aria-hidden="true">
+        <div className="boot-curtain__mosaic" aria-hidden="true" ref={mosaicRef}>
           {mosaicTiles.map((tile) => (
             <span
               key={tile}
-              style={
-                {
-                  '--mosaic-delay': `${(tile % 12) * 28 + Math.floor(tile / 12) * 12}ms`,
-                } as CSSProperties
-              }
+              style={{ '--tile-index': tile } as CSSProperties}
             />
           ))}
         </div>
       ) : null}
+
+      {/* Idle breathing mosaic overlay */}
+      {performanceProfile.allowHeavyMotion ? (
+        <div className="boot-curtain__mosaic-idle" aria-hidden="true">
+          {mosaicTiles.slice(0, 36).map((tile) => (
+            <span key={tile} style={{ '--tile-index': tile } as CSSProperties} />
+          ))}
+        </div>
+      ) : null}
+
       <div className="boot-curtain__veil" aria-hidden="true"></div>
 
       <div className="boot-curtain__copy">
@@ -288,7 +331,7 @@ export default function BootCurtain({
           </div>
 
           <h2>
-            <SplitFogText text="IAN" />
+            <FluidText text="IAN" influence={130} />
           </h2>
 
           <div className="boot-curtain__whispers">
