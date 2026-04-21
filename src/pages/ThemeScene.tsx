@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import AdaptiveMedia from '../components/AdaptiveMedia'

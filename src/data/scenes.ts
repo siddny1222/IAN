@@ -782,6 +782,7 @@ export const dimensions: Dimension[] = [
 ]
 
 export const visibleDimensions = dimensions.filter((dimension) => !dimension.hidden)
+export const hiddenDimension = dimensions.find((dimension) => dimension.hidden) ?? null
 const dimensionsBySlug = new Map(dimensions.map((dimension) => [dimension.slug, dimension]))
 const dimensionsByPath = new Map(dimensions.map((dimension) => [dimension.path, dimension]))
 
