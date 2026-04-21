@@ -10,6 +10,7 @@ import SignalHeader from './components/SignalHeader'
 import XpCursor from './components/XpCursor'
 import { shouldUseHashRouting } from './lib/performance'
 import { HomeExperienceRoute, ThemeSceneRoute } from './lib/routeModules'
+import { runRoutePulse, runSoftMotion } from './lib/softMotion'
 
 type RouteTone = 'home' | 'dreamfield' | 'browser' | 'bedroom' | 'pool' | 'mall' | 'backrooms' | 'soviet' | 'error'
 
@@ -79,6 +80,32 @@ function AppFrame() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (!performanceProfile.allowHeavyMotion || performanceProfile.prefersReducedMotion) {
+      return
+    }
+    const cleanupMotion = runSoftMotion([
+      {
+        selector: '.signal-header',
+        keyframes: [{ opacity: 0, transform: 'translateY(-18px)' }, { opacity: 1, transform: 'translateY(0px)' }],
+        options: { duration: 520, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both' },
+      },
+      {
+        selector: '.app-main',
+        keyframes: [{ opacity: 0, transform: 'translateY(16px)', filter: 'blur(6px)' }, { opacity: 1, transform: 'translateY(0px)', filter: 'blur(0px)' }],
+        options: { duration: 720, easing: 'cubic-bezier(0.22,1,0.36,1)', fill: 'both', delay: 120 },
+      },
+    ])
+    const cleanupRoutePulse = routePhase !== 'steady'
+      ? runRoutePulse('.route-veil')
+      : undefined
+
+    return () => {
+      cleanupMotion?.()
+      cleanupRoutePulse?.()
+    }
+  }, [performanceProfile.allowHeavyMotion, performanceProfile.prefersReducedMotion, routePhase])
 
   useEffect(() => {
     const currentDisplay = displayLocationRef.current
