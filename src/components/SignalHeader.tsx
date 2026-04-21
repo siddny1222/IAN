@@ -1,10 +1,11 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLocale } from '../context/useLocale'
 import { usePerformanceProfile } from '../context/usePerformanceProfile'
 import { primeMedia } from '../lib/mediaLoader'
 import { buildMediaQueue } from '../lib/performance'
 import { primeThemeSceneRoute } from '../lib/routeModules'
 import {
+  hiddenDimension,
   interfaceCopy,
   pickLocalized,
   visibleDimensions,
@@ -19,6 +20,7 @@ type SignalHeaderProps = {
 const locales: Language[] = ['zh', 'en', 'de']
 
 export default function SignalHeader({ activeDimension }: SignalHeaderProps) {
+  const navigate = useNavigate()
   const { language, setLanguage } = useLocale()
   const performanceProfile = usePerformanceProfile()
   const brandStamp = pickLocalized(interfaceCopy.brandStamp, language)
@@ -72,6 +74,14 @@ export default function SignalHeader({ activeDimension }: SignalHeaderProps) {
               className={activeDimension?.slug === dimension.slug ? 'is-active' : ''}
               data-ghost-text={dimensionTitle}
               key={dimension.slug}
+              onClick={(event) => {
+                if (!hiddenDimension || Math.random() >= 0.2) {
+                  return
+                }
+
+                event.preventDefault()
+                navigate(hiddenDimension.path)
+              }}
               onFocus={primeDimension}
               onMouseEnter={primeDimension}
               onTouchStart={primeDimension}

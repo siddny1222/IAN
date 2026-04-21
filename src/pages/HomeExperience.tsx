@@ -15,6 +15,7 @@ import {
   assetArchiveById,
   dimensions,
   fragmentText,
+  hiddenDimension,
   homeAxes,
   homeArchiveCollageIds,
   homeGhostWords,
@@ -228,14 +229,20 @@ export default function HomeExperience() {
       return
     }
 
-    setLaunchingScene(scene)
+    const resolvedScene = hiddenDimension
+      && scene.slug !== hiddenDimension.slug
+      && Math.random() < 0.2
+      ? hiddenDimension
+      : scene
+
+    setLaunchingScene(resolvedScene)
     const routeWarmup = primeThemeSceneRoute()
     const warmup = primeMedia(buildMediaQueue([
-      scene.media.still,
-      scene.media.texture,
-      scene.media.overlay,
-      scene.media.relic,
-      scene.media.illustration,
+      resolvedScene.media.still,
+      resolvedScene.media.texture,
+      resolvedScene.media.overlay,
+      resolvedScene.media.relic,
+      resolvedScene.media.illustration,
     ], performanceProfile, { includeHighCost: true, limit: 5 }))
     void Promise.race([
       Promise.all([routeWarmup, warmup]),
@@ -243,9 +250,9 @@ export default function HomeExperience() {
         window.setTimeout(resolve, 380)
       }),
     ]).then(() => {
-      navigate(scene.path, { state: { fromHub: true } })
+      navigate(resolvedScene.path, { state: { fromHub: true } })
     }).catch(() => {
-      navigate(scene.path, { state: { fromHub: true } })
+      navigate(resolvedScene.path, { state: { fromHub: true } })
     })
   }
 
