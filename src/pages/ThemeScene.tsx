@@ -80,6 +80,38 @@ export default function ThemeScene() {
     }
   }, [slug])
 
+  // Film strip wipe-in (GSAP clip-path reveal)
+  useEffect(() => {
+    if (!scene || !motionEnabled) return
+    const filmMain = document.querySelector<HTMLElement>('.dimension-film__main')
+    if (!filmMain) return
+    gsap.fromTo(
+      filmMain,
+      { clipPath: 'inset(0 100% 0 0 round 2px)' },
+      { clipPath: 'inset(0 0% 0 0 round 2px)', duration: 0.92, ease: 'power3.inOut', delay: 0.22, clearProps: 'clipPath' },
+    )
+  }, [motionEnabled, scene, slug])
+
+  // Error shrine entrance
+  useEffect(() => {
+    if (!scene || scene.tone !== 'error' || !motionEnabled) return
+    const field = document.querySelector<HTMLElement>('.error-shrine-field')
+    if (!field) return
+    const tl = gsap.timeline()
+    tl.fromTo(
+      field,
+      { opacity: 0, scale: 0.94, filter: 'blur(22px)' },
+      { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 1.4, ease: 'power2.out', clearProps: 'opacity,scale,filter' },
+    )
+    tl.fromTo(
+      '.error-shrine-field__beam--left, .error-shrine-field__beam--right',
+      { scaleY: 0, opacity: 0 },
+      { scaleY: 1, opacity: 1, duration: 0.68, ease: 'power3.out', stagger: 0.14 },
+      '-=0.6',
+    )
+    return () => { tl.kill() }
+  }, [motionEnabled, scene, slug])
+
   // Entry animations
   useEffect(() => {
     if (!scene || !motionEnabled) return

@@ -2099,8 +2099,14 @@ html[data-performance-tier='lite'] .dimension-hero__asset {
   content: '';
   width: clamp(2.2rem, 4vw, 3.4rem);
   height: 1px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.72), transparent);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--tone-b) 20%, transparent);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.78), transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--tone-b) 28%, transparent);
+  animation: microLineReveal 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes microLineReveal {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
 }
 
 .boot-curtain__center h2 span,
@@ -2171,10 +2177,13 @@ html[data-performance-tier='lite'] .dimension-hero__asset {
   gap: var(--display-title-gap);
   font-family: var(--display-font);
   max-width: min(8ch, 100%);
-  font-size: clamp(5.2rem, 16vw, 12.8rem);
+  font-size: clamp(5.6rem, 17vw, 14rem);
   font-weight: 900;
+  line-height: 0.84;
   letter-spacing: var(--display-title-tracking);
-  text-shadow: var(--title-shadow-strong);
+  text-shadow:
+    var(--title-shadow-strong),
+    0 0 120px rgba(180, 200, 255, 0.08);
 }
 
 .home-stage__intro h1 span:nth-child(2) {
@@ -3135,13 +3144,16 @@ html[data-performance-tier='lite'] .dimension-hero__asset {
   gap: calc(var(--display-title-gap) + 0.04rem);
   font-family: var(--display-font);
   max-width: min(8ch, 100%);
-  font-size: clamp(4.8rem, 12vw, 9.6rem);
+  font-size: clamp(5.2rem, 13vw, 10.8rem);
   font-weight: 900;
-  letter-spacing: calc(var(--display-title-tracking) - 0.005em);
+  line-height: 0.86;
+  letter-spacing: calc(var(--display-title-tracking) - 0.008em);
   text-transform: uppercase;
-  text-shadow: var(--title-shadow-strong);
+  text-shadow:
+    var(--title-shadow-strong),
+    0 0 80px color-mix(in srgb, var(--tone-b, rgba(162, 209, 255, 1)) 12%, transparent);
   mix-blend-mode: screen;
-  filter: contrast(1.08) saturate(1.14);
+  filter: contrast(1.1) saturate(1.18);
 }
 
 .dimension-hero h1 span:nth-child(odd) {
