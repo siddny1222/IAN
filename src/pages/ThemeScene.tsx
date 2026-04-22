@@ -110,39 +110,36 @@ export default function ThemeScene() {
     ])
   }, [motionEnabled, scene, slug])
 
-  // ScrollTrigger reveals for section content
+  // ScrollTrigger: stagger-reveal drift/echo sections on scroll-in
   useEffect(() => {
     if (!scene || !motionEnabled) return
 
-    const sections = document.querySelectorAll<HTMLElement>('.dimension-textbox, .dimension-drift__routes')
-    const cleanupFns: Array<() => void> = []
+    const targets = document.querySelectorAll<HTMLElement>(
+      '.dimension-drift__routes .scene-card',
+    )
+    if (!targets.length) return
 
-    sections.forEach((el) => {
-      const children = Array.from(el.children) as HTMLElement[]
-      if (!children.length) return
-
-      gsap.set(children, { opacity: 0, y: 22, filter: 'blur(5px)' })
-
-      const trigger = ScrollTrigger.create({
-        trigger: el,
-        start: 'top 88%',
-        onEnter: () => {
-          gsap.to(children, {
+    const trigger = ScrollTrigger.create({
+      trigger: '.dimension-drift',
+      start: 'top 92%',
+      onEnter: () => {
+        gsap.fromTo(
+          Array.from(targets),
+          { opacity: 0, y: 14, filter: 'blur(4px)' },
+          {
             opacity: 1,
             y: 0,
             filter: 'blur(0px)',
-            duration: 0.56,
+            duration: 0.52,
             ease: 'power3.out',
-            stagger: 0.06,
+            stagger: 0.08,
             clearProps: 'filter',
-          })
-        },
-      })
-
-      cleanupFns.push(() => trigger.kill())
+          },
+        )
+      },
     })
 
-    return () => { cleanupFns.forEach((fn) => fn()) }
+    return () => { trigger.kill() }
   }, [motionEnabled, scene, slug])
 
   // Parallax on backdrop still
