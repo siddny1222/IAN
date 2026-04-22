@@ -110,7 +110,7 @@ export default function ThemeScene() {
     ])
   }, [motionEnabled, scene, slug])
 
-  // ScrollTrigger: stagger-reveal drift/echo sections on scroll-in
+  // ScrollTrigger: stagger-reveal drift cards on scroll-in
   useEffect(() => {
     if (!scene || !motionEnabled) return
 
@@ -142,6 +142,39 @@ export default function ThemeScene() {
     return () => { trigger.kill() }
   }, [motionEnabled, scene, slug])
 
+  // ScrollTrigger: reveal textbox items on scroll-in (fires when grid enters from below)
+  useEffect(() => {
+    if (!scene || !motionEnabled) return
+
+    const textboxItems = document.querySelectorAll<HTMLElement>(
+      '.dimension-textbox > p, .dimension-textbox ul, .dimension-textbox__cta',
+    )
+    if (!textboxItems.length) return
+
+    gsap.set(Array.from(textboxItems), { opacity: 0, y: 12, filter: 'blur(4px)' })
+
+    const trigger = ScrollTrigger.create({
+      trigger: '.dimension-grid',
+      start: 'top 88%',
+      onEnter: () => {
+        gsap.to(Array.from(textboxItems), {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.58,
+          ease: 'power3.out',
+          stagger: 0.055,
+          clearProps: 'filter',
+        })
+      },
+    })
+
+    return () => {
+      trigger.kill()
+      gsap.set(Array.from(textboxItems), { clearProps: 'all' })
+    }
+  }, [motionEnabled, scene, slug])
+
   // Parallax on backdrop still
   useEffect(() => {
     if (!scene || !motionEnabled) return
@@ -160,6 +193,33 @@ export default function ThemeScene() {
     })
 
     return () => { trigger.kill() }
+  }, [motionEnabled, scene, slug])
+
+  // Parallax drift on dimension-echo overlay words
+  useEffect(() => {
+    if (!scene || !motionEnabled) return
+
+    const spans = document.querySelectorAll<HTMLElement>('.dimension-echo span')
+    if (!spans.length) return
+
+    const triggers: ReturnType<typeof ScrollTrigger.create>[] = []
+
+    spans.forEach((span, i) => {
+      const dir = i % 2 === 0 ? 1 : -1
+      const speed = 48 + i * 14
+      const t = ScrollTrigger.create({
+        trigger: '.dimension-echo',
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 1.6,
+        onUpdate: (self) => {
+          gsap.set(span, { y: dir * self.progress * speed, x: dir * self.progress * speed * 0.18 })
+        },
+      })
+      triggers.push(t)
+    })
+
+    return () => { triggers.forEach((t) => t.kill()) }
   }, [motionEnabled, scene, slug])
 
   const crossLinks = (scene?.crossLinks ?? [])

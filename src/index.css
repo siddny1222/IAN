@@ -781,18 +781,26 @@ html[data-performance-tier='lite'] .fluid-text__char {
 }
 
 .home-slices__dots button {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
   border: 0;
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.26);
   cursor: pointer;
-  transition: transform 160ms ease, background-color 160ms ease;
+  transition:
+    width 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 260ms ease,
+    box-shadow 260ms ease;
+}
+
+.home-slices__dots button:hover {
+  background: rgba(255, 255, 255, 0.46);
 }
 
 .home-slices__dots button.is-active {
-  background: rgba(193, 231, 255, 0.9);
-  transform: scale(1.22);
+  width: 24px;
+  background: rgba(193, 231, 255, 0.92);
+  box-shadow: 0 0 8px rgba(162, 209, 255, 0.44);
 }
 
 /* Carousel progress bar */
@@ -1546,12 +1554,34 @@ html[data-performance-tier='lite'] .dimension-hero__asset {
   letter-spacing: calc(var(--micro-tracking) + 0.08em);
   text-transform: uppercase;
   color: rgba(250, 240, 232, 0.42);
-  transition: color 180ms ease, transform 180ms ease;
+  transition:
+    color 260ms ease,
+    transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    text-shadow 260ms ease,
+    filter 260ms ease;
   text-shadow: var(--label-shadow);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   mix-blend-mode: screen;
   filter: blur(0.22px) saturate(1.08);
+}
+
+.signal-header__drift a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--tone-b, rgba(162, 209, 255, 1)) 72%, transparent),
+    transparent
+  );
+  transform: scaleX(0);
+  transition: transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
 }
 
 .signal-header__drift a:nth-child(odd) {
@@ -1566,10 +1596,17 @@ html[data-performance-tier='lite'] .dimension-hero__asset {
 .signal-header__drift a:focus-visible,
 .signal-header__drift a.is-active {
   color: rgba(255, 250, 246, 0.92);
-  transform: translateY(-4px) rotate(0deg);
+  transform: translateY(-5px) rotate(0deg) scale(1.04);
   text-shadow:
-    0 0 18px rgba(255, 255, 255, 0.08),
-    0 0 26px rgba(0, 0, 0, 0.34);
+    0 0 14px color-mix(in srgb, var(--tone-b, rgba(162, 209, 255, 1)) 28%, transparent),
+    0 0 28px rgba(0, 0, 0, 0.28);
+  filter: blur(0) saturate(1.18);
+}
+
+.signal-header__drift a:hover::after,
+.signal-header__drift a:focus-visible::after,
+.signal-header__drift a.is-active::after {
+  transform: scaleX(1);
 }
 
 .page {
@@ -2320,11 +2357,31 @@ html[data-performance-tier='lite'] .dimension-hero__asset {
   pointer-events: none;
 }
 
+.scene-card__shine,
 .scene-card__image,
 .scene-card__mist {
   position: absolute;
   inset: 0;
   pointer-events: none;
+}
+
+.scene-card__shine {
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--card-shine-x, 50%) var(--card-shine-y, 50%),
+    rgba(255, 255, 255, 0.22) 0%,
+    color-mix(in srgb, var(--card-b, rgba(162, 209, 255, 1)) 18%, transparent) 28%,
+    transparent 66%
+  );
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 320ms ease;
+  z-index: 2;
+}
+
+.scene-card:hover .scene-card__shine,
+.scene-card:focus-visible .scene-card__shine {
+  opacity: 1;
 }
 
 .scene-card__image {
@@ -2775,7 +2832,15 @@ html[data-performance-tier='lite'] .dimension-hero__asset {
   position: relative;
   z-index: 1;
   max-width: 420px;
-  padding: 22px;
+  padding: 28px 26px;
+  background: linear-gradient(
+    110deg,
+    rgba(4, 5, 10, 0.72) 0%,
+    rgba(4, 5, 10, 0.44) 72%,
+    transparent 100%
+  );
+  backdrop-filter: blur(2px);
+  border-radius: 0 0 12px 0;
 }
 
 .dimension-slice__copy h2 {
@@ -3713,12 +3778,15 @@ html[data-performance-tier='lite'] .dimension-hero__asset {
   position: absolute;
   font-family: var(--display-font);
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.09);
   letter-spacing: 0.22em;
   white-space: nowrap;
   mix-blend-mode: screen;
-  text-shadow: var(--ghost-shadow);
+  text-shadow:
+    var(--ghost-shadow),
+    0 0 60px color-mix(in srgb, var(--tone-b, rgba(162, 209, 255, 1)) 8%, transparent);
   animation: ghostFieldFloat 16s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 .dimension-echo span:nth-child(1) {
