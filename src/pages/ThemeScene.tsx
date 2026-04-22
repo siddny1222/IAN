@@ -80,6 +80,38 @@ export default function ThemeScene() {
     }
   }, [slug])
 
+  // Film strip wipe-in (GSAP clip-path reveal)
+  useEffect(() => {
+    if (!scene || !motionEnabled) return
+    const filmMain = document.querySelector<HTMLElement>('.dimension-film__main')
+    if (!filmMain) return
+    gsap.fromTo(
+      filmMain,
+      { clipPath: 'inset(0 100% 0 0 round 2px)' },
+      { clipPath: 'inset(0 0% 0 0 round 2px)', duration: 0.92, ease: 'power3.inOut', delay: 0.22, clearProps: 'clipPath' },
+    )
+  }, [motionEnabled, scene, slug])
+
+  // Error shrine entrance
+  useEffect(() => {
+    if (!scene || scene.tone !== 'error' || !motionEnabled) return
+    const field = document.querySelector<HTMLElement>('.error-shrine-field')
+    if (!field) return
+    const tl = gsap.timeline()
+    tl.fromTo(
+      field,
+      { opacity: 0, scale: 0.94, filter: 'blur(22px)' },
+      { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 1.4, ease: 'power2.out', clearProps: 'opacity,scale,filter' },
+    )
+    tl.fromTo(
+      '.error-shrine-field__beam--left, .error-shrine-field__beam--right',
+      { scaleY: 0, opacity: 0 },
+      { scaleY: 1, opacity: 1, duration: 0.68, ease: 'power3.out', stagger: 0.14 },
+      '-=0.6',
+    )
+    return () => { tl.kill() }
+  }, [motionEnabled, scene, slug])
+
   // Entry animations
   useEffect(() => {
     if (!scene || !motionEnabled) return
@@ -110,39 +142,69 @@ export default function ThemeScene() {
     ])
   }, [motionEnabled, scene, slug])
 
-  // ScrollTrigger reveals for section content
+  // ScrollTrigger: stagger-reveal drift cards on scroll-in
   useEffect(() => {
     if (!scene || !motionEnabled) return
 
-    const sections = document.querySelectorAll<HTMLElement>('.dimension-textbox, .dimension-drift__routes')
-    const cleanupFns: Array<() => void> = []
+    const targets = document.querySelectorAll<HTMLElement>(
+      '.dimension-drift__routes .scene-card',
+    )
+    if (!targets.length) return
 
-    sections.forEach((el) => {
-      const children = Array.from(el.children) as HTMLElement[]
-      if (!children.length) return
-
-      gsap.set(children, { opacity: 0, y: 22, filter: 'blur(5px)' })
-
-      const trigger = ScrollTrigger.create({
-        trigger: el,
-        start: 'top 88%',
-        onEnter: () => {
-          gsap.to(children, {
+    const trigger = ScrollTrigger.create({
+      trigger: '.dimension-drift',
+      start: 'top 92%',
+      onEnter: () => {
+        gsap.fromTo(
+          Array.from(targets),
+          { opacity: 0, y: 14, filter: 'blur(4px)' },
+          {
             opacity: 1,
             y: 0,
             filter: 'blur(0px)',
-            duration: 0.56,
+            duration: 0.52,
             ease: 'power3.out',
-            stagger: 0.06,
+            stagger: 0.08,
             clearProps: 'filter',
-          })
-        },
-      })
-
-      cleanupFns.push(() => trigger.kill())
+          },
+        )
+      },
     })
 
-    return () => { cleanupFns.forEach((fn) => fn()) }
+    return () => { trigger.kill() }
+  }, [motionEnabled, scene, slug])
+
+  // ScrollTrigger: reveal textbox items on scroll-in (fires when grid enters from below)
+  useEffect(() => {
+    if (!scene || !motionEnabled) return
+
+    const textboxItems = document.querySelectorAll<HTMLElement>(
+      '.dimension-textbox > p, .dimension-textbox ul, .dimension-textbox__cta',
+    )
+    if (!textboxItems.length) return
+
+    gsap.set(Array.from(textboxItems), { opacity: 0, y: 12, filter: 'blur(4px)' })
+
+    const trigger = ScrollTrigger.create({
+      trigger: '.dimension-grid',
+      start: 'top 88%',
+      onEnter: () => {
+        gsap.to(Array.from(textboxItems), {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.58,
+          ease: 'power3.out',
+          stagger: 0.055,
+          clearProps: 'filter',
+        })
+      },
+    })
+
+    return () => {
+      trigger.kill()
+      gsap.set(Array.from(textboxItems), { clearProps: 'all' })
+    }
   }, [motionEnabled, scene, slug])
 
   // Parallax on backdrop still
@@ -163,6 +225,33 @@ export default function ThemeScene() {
     })
 
     return () => { trigger.kill() }
+  }, [motionEnabled, scene, slug])
+
+  // Parallax drift on dimension-echo overlay words
+  useEffect(() => {
+    if (!scene || !motionEnabled) return
+
+    const spans = document.querySelectorAll<HTMLElement>('.dimension-echo span')
+    if (!spans.length) return
+
+    const triggers: ReturnType<typeof ScrollTrigger.create>[] = []
+
+    spans.forEach((span, i) => {
+      const dir = i % 2 === 0 ? 1 : -1
+      const speed = 48 + i * 14
+      const t = ScrollTrigger.create({
+        trigger: '.dimension-echo',
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 1.6,
+        onUpdate: (self) => {
+          gsap.set(span, { y: dir * self.progress * speed, x: dir * self.progress * speed * 0.18 })
+        },
+      })
+      triggers.push(t)
+    })
+
+    return () => { triggers.forEach((t) => t.kill()) }
   }, [motionEnabled, scene, slug])
 
   const crossLinks = (scene?.crossLinks ?? [])

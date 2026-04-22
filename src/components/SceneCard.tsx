@@ -44,6 +44,19 @@ export default function SceneCard({
       { limit: 4 },
     ))
   }
+
+  const handleShineMove = (e: React.MouseEvent<HTMLElement>) => {
+    const el = e.currentTarget
+    const rect = el.getBoundingClientRect()
+    el.style.setProperty('--card-shine-x', `${((e.clientX - rect.left) / rect.width * 100).toFixed(1)}%`)
+    el.style.setProperty('--card-shine-y', `${((e.clientY - rect.top) / rect.height * 100).toFixed(1)}%`)
+  }
+
+  const handleShineLeave = (e: React.MouseEvent<HTMLElement>) => {
+    e.currentTarget.style.removeProperty('--card-shine-x')
+    e.currentTarget.style.removeProperty('--card-shine-y')
+  }
+
   const toneStyle = {
     '--card-a': scene.palette[0],
     '--card-b': scene.palette[1],
@@ -54,6 +67,7 @@ export default function SceneCard({
 
   const content = (
     <>
+      <span aria-hidden="true" className="scene-card__shine" />
       <span
         aria-hidden="true"
         className="scene-card__image"
@@ -77,6 +91,8 @@ export default function SceneCard({
         disabled={disabled}
         onFocus={primeScene}
         onMouseEnter={primeScene}
+        onMouseMove={handleShineMove}
+        onMouseLeave={handleShineLeave}
         onTouchStart={primeScene}
         onClick={() => onActivate(scene)}
         style={toneStyle}
@@ -101,6 +117,8 @@ export default function SceneCard({
       }}
       onFocus={primeScene}
       onMouseEnter={primeScene}
+      onMouseMove={handleShineMove}
+      onMouseLeave={handleShineLeave}
       onTouchStart={primeScene}
       style={toneStyle}
       to={scene.path}

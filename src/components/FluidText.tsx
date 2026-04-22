@@ -79,8 +79,8 @@ const FluidText = memo(function FluidText({
 
   // Physics ticker – runs every frame
   useEffect(() => {
-    const SPRING = 0.074
-    const DRAG = 0.81
+    const SPRING = 0.062   // softer → slower, more elastic return
+    const DRAG = 0.82      // slightly more drag for silky feel
 
     const tick = () => {
       const s = states.current
@@ -103,10 +103,10 @@ const FluidText = memo(function FluidText({
 
           if (dist < influence && dist > 0.5) {
             const t = 1 - dist / influence
-            const force = t * t * 12
+            const force = t * t * 18       // stronger push
             st.vx += (dx / dist) * force
             st.vy += (dy / dist) * force
-            st.highlight = Math.min(1, st.highlight + t * 0.18)
+            st.highlight = Math.min(1, st.highlight + t * 0.24)  // faster color ramp
           }
         }
 
@@ -119,13 +119,13 @@ const FluidText = memo(function FluidText({
         // Integrate
         st.x += st.vx
         st.y += st.vy
-        // Decay highlight
-        st.highlight *= 0.9
+        // Decay highlight — slower so colour lingers
+        st.highlight *= 0.87
 
         // Visual from displacement
         const disp = Math.sqrt(st.x * st.x + st.y * st.y)
-        const blurVal = Math.min(disp * 0.115, 9.5)
-        const alpha = Math.max(0.38, 1 - disp * 0.0075)
+        const blurVal = Math.min(disp * 0.11, 8)
+        const alpha = Math.max(0.42, 1 - disp * 0.007)
 
         // Interpolated color
         const h = st.highlight
@@ -136,10 +136,10 @@ const FluidText = memo(function FluidText({
 
         el.style.transform = `translate(${st.x.toFixed(2)}px,${st.y.toFixed(2)}px)`
         el.style.opacity = (alpha * a).toFixed(3)
-        el.style.color = h > 0.04
+        el.style.color = h > 0.03
           ? `rgb(${r},${g},${b})`
           : ''
-        if (blurVal > 0.4) {
+        if (blurVal > 0.35) {
           el.style.filter = `blur(${blurVal.toFixed(2)}px)`
         } else if (el.style.filter) {
           el.style.filter = ''

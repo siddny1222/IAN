@@ -120,6 +120,7 @@ export default function HomeExperience() {
   const [activeSlice, setActiveSlice] = useState(0)
   const prevSliceRef = useRef(0)
   const slicesTrackRef = useRef<HTMLDivElement>(null)
+  const touchStartXRef = useRef<number | null>(null)
   const showExperience = curtainPhase !== 'closed'
 
   const featuredArchive = homeArchiveCollageIds
@@ -351,7 +352,22 @@ export default function HomeExperience() {
       </section>
 
       <section className="home-slices">
-        <div className="home-slices__viewport">
+        <div
+          className="home-slices__viewport"
+          onTouchStart={(e) => { touchStartXRef.current = e.touches[0].clientX }}
+          onTouchEnd={(e) => {
+            const startX = touchStartXRef.current
+            touchStartXRef.current = null
+            if (startX === null) return
+            const dx = e.changedTouches[0].clientX - startX
+            if (Math.abs(dx) < 48) return
+            setActiveSlice((s) =>
+              dx < 0
+                ? Math.min(s + 1, visibleDimensions.length - 1)
+                : Math.max(s - 1, 0),
+            )
+          }}
+        >
           <div
             className="home-slices__track"
             ref={slicesTrackRef}
